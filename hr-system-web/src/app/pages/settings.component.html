@@ -1,0 +1,162 @@
+<section class="page">
+  <h2>Settings</h2>
+  <p class="status success" *ngIf="success">{{ success }}</p>
+  <p class="status error" *ngIf="error">{{ error }}</p>
+
+  <section class="panel" *ngIf="profile as p">
+    <h3>My Profile</h3>
+    <div class="grid">
+      <label>
+        First Name
+        <input [(ngModel)]="p.firstName" />
+      </label>
+      <label>
+        Last Name
+        <input [(ngModel)]="p.lastName" />
+      </label>
+      <label>
+        Email
+        <input [ngModel]="p.email" disabled />
+      </label>
+      <label>
+        Phone
+        <input [(ngModel)]="p.phoneNumber" />
+      </label>
+      <label>
+        Role
+        <input [ngModel]="p.role" disabled />
+      </label>
+    </div>
+    <div class="actions">
+      <button type="button" (click)="saveProfile()">Save Profile</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h3>UI Preferences</h3>
+    <div class="grid">
+      <label>
+        Theme
+        <select [(ngModel)]="preferences.theme">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" [(ngModel)]="preferences.autoHideSidebar" />
+        Auto hide sidebar after navigation
+      </label>
+    </div>
+    <div class="actions">
+      <button type="button" (click)="savePreferences()">Save Preferences</button>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="isAdmin()">
+    <h3>Admin User Management</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th>Active</th>
+            <th>Edit</th>
+            <th>Email To</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>
+              <div class="inline-grid">
+                <input [(ngModel)]="user.firstName" />
+                <input [(ngModel)]="user.lastName" />
+              </div>
+            </td>
+            <td>{{ user.email }}</td>
+            <td><input [(ngModel)]="user.phoneNumber" /></td>
+            <td>
+              <select [(ngModel)]="user.role">
+                <option value="Candidate">Candidate</option>
+                <option value="Admin">Admin</option>
+              </select>
+            </td>
+            <td><input type="checkbox" [(ngModel)]="user.isActive" /></td>
+            <td><button type="button" (click)="saveUser(user)">Save</button></td>
+            <td>
+              <input
+                type="checkbox"
+                [checked]="selectedUserIds.includes(user.id)"
+                (change)="toggleRecipient(user.id, $any($event.target).checked)" />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="isAdmin()">
+    <h3>Admin Company Management</h3>
+    <article class="company-card" *ngFor="let company of companies">
+      <div class="grid">
+        <label>
+          Name
+          <input [(ngModel)]="company.name" />
+        </label>
+        <label>
+          City
+          <input [(ngModel)]="company.city" />
+        </label>
+        <label>
+          Country
+          <input [(ngModel)]="company.country" />
+        </label>
+        <label class="wide">
+          Address
+          <input [(ngModel)]="company.address" />
+        </label>
+        <label>
+          Phone
+          <input [(ngModel)]="company.phone" />
+        </label>
+        <label>
+          Email
+          <input [(ngModel)]="company.email" />
+        </label>
+        <label class="wide">
+          Description
+          <textarea [(ngModel)]="company.description"></textarea>
+        </label>
+      </div>
+      <div class="actions">
+        <button type="button" (click)="saveCompany(company)">Save Company</button>
+      </div>
+    </article>
+  </section>
+
+  <section class="panel" *ngIf="isAdmin()">
+    <h3>Send Personalized Email (noreply@hrsystem.com)</h3>
+    <div class="grid">
+      <label class="checkbox-row">
+        <input type="checkbox" [(ngModel)]="sendToAllCandidates" />
+        Include all active candidates
+      </label>
+      <label>
+        Subject
+        <input [(ngModel)]="emailSubject" placeholder="Application update" />
+      </label>
+      <label class="wide">
+        Message
+        <textarea
+          [(ngModel)]="emailMessage"
+          [attr.placeholder]="'Hi [firstName], your application is progressing to the next stage.'"></textarea>
+        <small>Token support: use <code>[firstName]</code>, <code>[lastName]</code>, <code>[email]</code>.</small>
+      </label>
+    </div>
+    <div class="actions">
+      <button type="button" (click)="sendEmail()">Send Email</button>
+    </div>
+  </section>
+</section>

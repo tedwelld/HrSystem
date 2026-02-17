@@ -1,0 +1,29 @@
+<section class="dashboard" *ngIf="dashboard as d">
+  <h2>Candidate Dashboard</h2>
+
+  <div class="cards">
+    <a routerLink="/app/jobs" class="card">
+      <h3>Open Jobs</h3>
+      <strong>{{ d.openJobPostings }}</strong>
+    </a>
+    <a routerLink="/app/applications" class="card">
+      <h3>My Applications</h3>
+      <strong>{{ d.myApplications }}</strong>
+    </a>
+    <a routerLink="/app/applications" class="card">
+      <h3>Interviews</h3>
+      <strong>{{ d.interviewScheduled }}</strong>
+    </a>
+    <a routerLink="/app/notifications" class="card">
+      <h3>Unread Alerts</h3>
+      <strong>{{ d.notificationsUnread }}</strong>
+    </a>
+  </div>
+
+  <div class="chart-card">
+    <h3>Application Progress</h3>
+    <div class="chart-wrap">
+      <canvas baseChart [data]="chartData" [options]="chartOptions" [type]="'bar'"></canvas>
+    </div>
+  </div>
+</section>

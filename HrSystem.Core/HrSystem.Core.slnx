@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="../HrSystem.Api.csproj" />
+  <Project Path="HrSystem.Core/HrSystem.Core.csproj" />
+</Solution>

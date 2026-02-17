@@ -1,0 +1,37 @@
+<section class="auth-wrap">
+  <form class="auth-card" (ngSubmit)="submit()">
+    <h2>Create Account</h2>
+    <p>Register as candidate or HR admin.</p>
+
+    <label>First Name</label>
+    <input [(ngModel)]="firstName" name="firstName" required />
+
+    <label>Last Name</label>
+    <input [(ngModel)]="lastName" name="lastName" required />
+
+    <label>Email</label>
+    <input type="email" [(ngModel)]="email" name="email" required />
+
+    <label>Phone Number</label>
+    <input [(ngModel)]="phoneNumber" name="phoneNumber" />
+
+    <label>Password</label>
+    <input type="password" [(ngModel)]="password" name="password" required minlength="8" />
+
+    <label>Role</label>
+    <select [(ngModel)]="role" name="role">
+      <option value="Candidate">Candidate</option>
+      <option value="Admin">HR Admin</option>
+    </select>
+
+    <ng-container *ngIf="role === 'Admin'">
+      <label>Admin Invite Code</label>
+      <input [(ngModel)]="adminInviteCode" name="adminInviteCode" />
+    </ng-container>
+
+    <button type="submit" [disabled]="loading">{{ loading ? 'Creating...' : 'Register' }}</button>
+
+    <small class="error" *ngIf="error">{{ error }}</small>
+    <p class="switch">Already have an account? <a routerLink="/login">Sign in</a></p>
+  </form>
+</section>

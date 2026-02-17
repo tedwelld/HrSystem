@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="HrSystem.Api/HrSystem.Api.csproj" />
+  <Project Path="HrSystem.Core/HrSystem.Core.csproj" />
+  <Project Path="HrSystem.Data/HrSystem.Data.csproj" />
+</Solution>

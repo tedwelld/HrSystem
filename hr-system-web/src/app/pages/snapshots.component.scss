@@ -1,0 +1,38 @@
+.page {
+  display: grid;
+  gap: 0.9rem;
+  max-width: 100%;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 16px;
+  border: 1px solid var(--glass-line);
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+
+  th,
+  td {
+    border-bottom: 1px solid var(--glass-line);
+    padding: 0.65rem;
+    text-align: left;
+    vertical-align: top;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  th {
+    font-weight: 700;
+    background: color-mix(in srgb, var(--glass-bg) 76%, transparent);
+  }
+}
+
+.error {
+  color: #b42318;
+}

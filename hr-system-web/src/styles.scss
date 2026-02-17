@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+:root {
+  --app-bg: radial-gradient(circle at 12% 12%, #f4fbff 0%, #e6f5ff 35%, #ebf7f2 100%);
+  --glass-bg: rgba(255, 255, 255, 0.58);
+  --glass-line: rgba(148, 163, 184, 0.35);
+  --text-color: #0f172a;
+  --muted-color: #475569;
+  --accent-bg: rgba(59, 130, 246, 0.85);
+  --accent-text: #f8fafc;
+  --link-color: #2563eb;
+}
+
+body[data-theme='dark'] {
+  --app-bg: radial-gradient(circle at 18% 8%, #1e293b 0%, #0f172a 48%, #111827 100%);
+  --glass-bg: rgba(15, 23, 42, 0.58);
+  --glass-line: rgba(148, 163, 184, 0.26);
+  --text-color: #e2e8f0;
+  --muted-color: #cbd5e1;
+  --accent-bg: rgba(20, 184, 166, 0.72);
+  --accent-text: #f8fafc;
+  --link-color: #67e8f9;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--text-color);
+  background: var(--app-bg);
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: 'Outfit', sans-serif;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
+app-root {
+  display: block;
+  min-height: 100dvh;
+}

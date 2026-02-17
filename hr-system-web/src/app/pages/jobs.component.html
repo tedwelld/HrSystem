@@ -1,0 +1,223 @@
+<section class="page">
+  <h2>Jobs & Vacancies</h2>
+
+  <p class="status success" *ngIf="success">{{ success }}</p>
+  <p class="status error" *ngIf="error">{{ error }}</p>
+
+  <section class="panel" *ngIf="role() === 'Admin'">
+    <h3>Admin Job Management</h3>
+
+    <div class="grid">
+      <label>
+        Job Kind
+        <select [(ngModel)]="newJob.title">
+          <option *ngFor="let option of titleOptions" [value]="option">{{ option }}</option>
+        </select>
+      </label>
+
+      <label>
+        Location
+        <select [(ngModel)]="newJob.location">
+          <option *ngFor="let option of locationOptions" [value]="option">{{ option }}</option>
+        </select>
+      </label>
+
+      <label>
+        Employment Type
+        <select [(ngModel)]="newJob.employmentType">
+          <option *ngFor="let option of employmentTypeOptions" [value]="option">{{ option }}</option>
+        </select>
+      </label>
+
+      <label>
+        Experience Level
+        <select [(ngModel)]="newJob.experienceLevel">
+          <option *ngFor="let option of experienceLevelOptions" [value]="option">{{ option }}</option>
+        </select>
+      </label>
+
+      <label>
+        Skill Preset
+        <select [(ngModel)]="selectedNewPreset" (change)="applyPreset('new', selectedNewPreset)">
+          <option *ngFor="let preset of skillPresets" [value]="preset.label">{{ preset.label }}</option>
+        </select>
+      </label>
+
+      <label>
+        Salary Min
+        <input type="number" [(ngModel)]="newJob.salaryMin" />
+      </label>
+
+      <label>
+        Salary Max
+        <input type="number" [(ngModel)]="newJob.salaryMax" />
+      </label>
+
+      <label>
+        Required Skills
+        <input [(ngModel)]="newJob.requiredSkillsCsv" />
+      </label>
+
+      <label class="wide">
+        Description
+        <textarea [(ngModel)]="newJob.description"></textarea>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="button" (click)="resetCreateForm()">Add</button>
+      <button type="button" (click)="createJob()">Post</button>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="editingJobId !== null && role() === 'Admin'">
+    <h3>Edit Job #{{ editingJobId }}</h3>
+    <div class="grid">
+      <label>
+        Job Kind
+        <select [(ngModel)]="editJob.title">
+          <option *ngFor="let option of titleOptions" [value]="option">{{ option }}</option>
+        </select>
+      </label>
+
+      <label>
+        Location
+        <select [(ngModel)]="editJob.location">
+          <option *ngFor="let option of locationOptions" [value]="option">{{ option }}</option>
+        </select>
+      </label>
+
+      <label>
+        Employment Type
+        <select [(ngModel)]="editJob.employmentType">
+          <option *ngFor="let option of employmentTypeOptions" [value]="option">{{ option }}</option>
+        </select>
+      </label>
+
+      <label>
+        Experience Level
+        <select [(ngModel)]="editJob.experienceLevel">
+          <option *ngFor="let option of experienceLevelOptions" [value]="option">{{ option }}</option>
+        </select>
+      </label>
+
+      <label>
+        Skill Preset
+        <select [(ngModel)]="selectedEditPreset" (change)="applyPreset('edit', selectedEditPreset)">
+          <option *ngFor="let preset of skillPresets" [value]="preset.label">{{ preset.label }}</option>
+        </select>
+      </label>
+
+      <label>
+        Salary Min
+        <input type="number" [(ngModel)]="editJob.salaryMin" />
+      </label>
+
+      <label>
+        Salary Max
+        <input type="number" [(ngModel)]="editJob.salaryMax" />
+      </label>
+
+      <label>
+        Required Skills
+        <input [(ngModel)]="editJob.requiredSkillsCsv" />
+      </label>
+
+      <label class="wide">
+        Description
+        <textarea [(ngModel)]="editJob.description"></textarea>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="button" (click)="saveEdit()">Edit</button>
+      <button type="button" class="secondary" (click)="cancelEdit()">Cancel</button>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="role() === 'Candidate'">
+    <h3>Application Settings & CV Upload</h3>
+    <div class="grid">
+      <label>
+        CV Profile
+        <select [(ngModel)]="selectedCvId">
+          <option [ngValue]="undefined">Apply without CV profile</option>
+          <option *ngFor="let cv of cvProfiles" [ngValue]="cv.id">
+            {{ cv.id }} - {{ cv.originalFileName }}
+          </option>
+        </select>
+      </label>
+
+      <label class="wide">
+        Cover Letter
+        <textarea [(ngModel)]="coverLetter"></textarea>
+      </label>
+
+      <label>
+        Structured CV File Name
+        <input [(ngModel)]="structuredCv.fileName" />
+      </label>
+
+      <label class="wide">
+        Full CV Text
+        <textarea [(ngModel)]="structuredCv.fullText"></textarea>
+      </label>
+
+      <label>
+        Skills CSV
+        <input [(ngModel)]="structuredCv.skillsCsv" />
+      </label>
+
+      <label>
+        Education Summary
+        <input [(ngModel)]="structuredCv.educationSummary" />
+      </label>
+
+      <label>
+        Years of Experience
+        <input type="number" [(ngModel)]="structuredCv.yearsOfExperience" />
+      </label>
+
+      <label>
+        Certifications
+        <input [(ngModel)]="structuredCv.certificationsSummary" />
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="button" (click)="uploadStructuredCv()">Add Structured CV</button>
+      <input type="file" (change)="onFileSelected($event)" />
+      <button type="button" (click)="uploadTextCv()">Post Text CV</button>
+    </div>
+  </section>
+
+  <section class="jobs" *ngIf="!loading; else loadingTpl">
+    <article class="job-card" *ngFor="let job of jobs">
+      <div class="meta">
+        <h3>{{ job.title }}</h3>
+        <span>{{ job.companyName }} | {{ job.location }} | {{ job.employmentType }}</span>
+      </div>
+
+      <p>{{ job.description }}</p>
+      <p><strong>Skills:</strong> {{ job.requiredSkills.join(', ') || 'N/A' }}</p>
+      <p><strong>Salary:</strong> {{ job.salaryMin || 0 }} - {{ job.salaryMax || 0 }}</p>
+
+      <div class="actions" *ngIf="role() === 'Candidate'">
+        <button type="button" (click)="apply(job.id)">Apply</button>
+      </div>
+
+      <div class="actions" *ngIf="role() === 'Admin'">
+        <button type="button" (click)="startEdit(job)">Edit</button>
+        <button type="button" (click)="deleteJob(job.id)">Delete</button>
+        <button type="button" *ngIf="job.isOpen" (click)="closeJob(job.id)">Close</button>
+        <button type="button" *ngIf="!job.isOpen" (click)="reopenJob(job)">Reopen</button>
+      </div>
+
+      <div class="badge" [class.closed]="!job.isOpen">{{ job.isOpen ? 'Open' : 'Closed' }}</div>
+    </article>
+  </section>
+
+  <ng-template #loadingTpl>
+    <p>Loading jobs...</p>
+  </ng-template>
+</section>

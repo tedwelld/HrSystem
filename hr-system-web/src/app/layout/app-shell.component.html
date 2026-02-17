@@ -1,0 +1,93 @@
+<div class="shell" (window:resize)="onResize()">
+  <div class="liquid-orb orb-a"></div>
+  <div class="liquid-orb orb-b"></div>
+  <div class="liquid-orb orb-c"></div>
+  <header class="topbar">
+    <div class="left-head">
+      <button class="icon-btn" type="button" (click)="toggleSidebar()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="brand">
+        <div class="mark">HR</div>
+        <div>
+          <h1>HrSystem</h1>
+          <p>Recruitment Control Panel</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-tools">
+      <div class="clock">{{ now() | date:'mediumTime' }}</div>
+
+      <button class="icon-btn bell" type="button" (click)="toggleNotificationPanel()" aria-label="Notifications">
+        <i class="fa-solid fa-bell"></i>
+        <span class="badge" *ngIf="unreadCount() > 0">{{ unreadCount() }}</span>
+      </button>
+
+      <button class="icon-btn" type="button" (click)="toggleTheme()">
+        <i [class]="theme() === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun'"></i>
+      </button>
+
+      <div class="user-zone" *ngIf="user() as currentUser">
+        <div>
+          <strong>{{ currentUser.firstName }} {{ currentUser.lastName }}</strong>
+          <span>{{ currentUser.role }}</span>
+        </div>
+        <button type="button" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <aside class="sidebar" [class.open]="sidebarOpen()" [class.collapsed]="!sidebarOpen() && !isMobile()">
+    <div class="sidebar-top">
+      <h3>Navigation</h3>
+      <button class="close-btn" type="button" (click)="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <label class="auto-hide-row">
+      <input type="checkbox" [checked]="autoHideSidebar()" (change)="toggleAutoHide()" />
+      Auto hide sidebar after click
+    </label>
+
+    <section class="group" *ngFor="let group of groupedNav()">
+      <h4>{{ group.label }}</h4>
+      <button
+        *ngFor="let item of group.items"
+        type="button"
+        class="nav-card"
+        [class.active]="isActive(item.path)"
+        (click)="navigate(item.path)">
+        <i [class]="item.icon"></i>
+        {{ item.label }}
+      </button>
+    </section>
+  </aside>
+
+  <section class="notif-panel" *ngIf="showNotificationPanel()">
+    <div class="panel-head">
+      <h4>Alerts</h4>
+      <button type="button" (click)="markAllAsRead()">Mark all read</button>
+    </div>
+
+    <article class="notif-item" *ngFor="let item of notifications()">
+      <div>
+        <strong>{{ item.title }}</strong>
+        <p>{{ item.message }}</p>
+        <small>{{ item.createdAtUtc | date:'short' }}</small>
+      </div>
+      <button *ngIf="!item.isRead" type="button" (click)="markAsRead(item.id)">Read</button>
+    </article>
+
+    <button type="button" class="view-all" (click)="navigate('/app/notifications')">View all notifications</button>
+  </section>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+
+  <footer class="footer">
+    Powered by yourITguy-Tedwell | Address: 100 Main Street, Victoria Falls | Contact: tedwellzwane34@gmail.com | Location: Victoria Falls, Zimbabwe
+  </footer>
+
+  <div class="overlay" *ngIf="sidebarOpen() && isMobile()" (click)="toggleSidebar()"></div>
+</div>

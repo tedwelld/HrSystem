@@ -1,0 +1,65 @@
+<section class="dashboard" *ngIf="dashboard as d">
+  <h2>HR Admin Dashboard</h2>
+
+  <div class="cards">
+    <a routerLink="/app/jobs" class="card">
+      <h3>Open Vacancies</h3>
+      <strong>{{ d.openJobPostings }}</strong>
+    </a>
+    <a routerLink="/app/jobs" class="card">
+      <h3>Closed Vacancies</h3>
+      <strong>{{ d.closedJobPostings }}</strong>
+    </a>
+    <a routerLink="/app/applications" class="card">
+      <h3>Applications</h3>
+      <strong>{{ d.totalApplications }}</strong>
+    </a>
+    <a routerLink="/app/applications" class="card">
+      <h3>Pending Review</h3>
+      <strong>{{ d.pendingReviewApplications }}</strong>
+    </a>
+    <a routerLink="/app/jobs" class="card">
+      <h3>Candidates</h3>
+      <strong>{{ d.totalCandidates }}</strong>
+    </a>
+    <a routerLink="/app/settings" class="card">
+      <h3>Companies</h3>
+      <strong>{{ d.totalCompanies }}</strong>
+    </a>
+    <a routerLink="/app/settings" class="card">
+      <h3>Interviews</h3>
+      <strong>{{ d.totalInterviewsScheduled }}</strong>
+    </a>
+    <a routerLink="/app/applications" class="card">
+      <h3>Avg Match Score</h3>
+      <strong>{{ d.averageApplicationMatchScore }}%</strong>
+    </a>
+    <a routerLink="/app/settings" class="card">
+      <h3>Admins</h3>
+      <strong>{{ d.totalAdmins }}</strong>
+    </a>
+  </div>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Jobs vs Applications (6 Months)</h3>
+      <div class="chart-wrap">
+        <canvas baseChart [data]="lineData" [options]="lineOptions" [type]="'line'"></canvas>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3>Clustered Jobs vs Applications</h3>
+      <div class="chart-wrap">
+        <canvas baseChart [data]="clusteredBarData" [options]="barOptions" [type]="'bar'"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <a routerLink="/app/settings" class="action-btn">Edit Users</a>
+    <a routerLink="/app/settings" class="action-btn">Edit Companies</a>
+    <a routerLink="/app/settings" class="action-btn">Send Candidate Emails</a>
+    <a routerLink="/app/snapshots" class="action-btn">Audit Snapshots</a>
+  </div>
+</section>

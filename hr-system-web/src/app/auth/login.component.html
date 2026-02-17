@@ -1,0 +1,18 @@
+<section class="auth-wrap">
+  <form class="auth-card" (ngSubmit)="submit()">
+    <h2>Sign In</h2>
+    <p>Access candidate or HR admin dashboard.</p>
+
+    <label>Email</label>
+    <input type="email" [(ngModel)]="email" name="email" required />
+
+    <label>Password</label>
+    <input type="password" [(ngModel)]="password" name="password" required />
+
+    <button type="submit" [disabled]="loading">{{ loading ? 'Signing in...' : 'Login' }}</button>
+
+    <small class="error" *ngIf="error">{{ error }}</small>
+
+    <p class="switch">No account? <a routerLink="/register">Create one</a></p>
+  </form>
+</section>

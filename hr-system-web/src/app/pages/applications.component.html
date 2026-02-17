@@ -1,0 +1,35 @@
+<section class="page">
+  <h2>Applications</h2>
+
+  <p class="status success" *ngIf="success">{{ success }}</p>
+  <p class="status error" *ngIf="error">{{ error }}</p>
+
+  <article class="app-card" *ngFor="let app of applications">
+    <h3>{{ app.jobTitle }}</h3>
+    <p><strong>Status:</strong> {{ app.stage }} | <strong>Match:</strong> {{ app.matchScore }}%</p>
+
+    <p *ngIf="role() === 'Admin'">
+      <strong>Candidate:</strong> {{ app.candidateName }} ({{ app.candidateEmail }})
+    </p>
+
+    <p><strong>Strengths:</strong> {{ app.strengthsSummary }}</p>
+    <p><strong>Weaknesses:</strong> {{ app.weaknessesSummary }}</p>
+
+    <div class="admin-tools" *ngIf="role() === 'Admin'">
+      <select [(ngModel)]="stageDraft[app.id]">
+        <option *ngFor="let stage of stageOptions" [value]="stage">{{ stage }}</option>
+      </select>
+      <button type="button" (click)="updateStage(app.id)">Update Stage</button>
+      <input [(ngModel)]="noteDraft[app.id]" placeholder="Follow-up note" />
+      <button type="button" (click)="addFollowUp(app.id)">Add Follow-up</button>
+    </div>
+
+    <div class="notes" *ngIf="app.followUpNotes.length > 0">
+      <h4>Follow-up Notes</h4>
+      <div class="note" *ngFor="let note of app.followUpNotes">
+        <strong>{{ note.adminName }}</strong>
+        <p>{{ note.note }}</p>
+      </div>
+    </div>
+  </article>
+</section>

@@ -1,0 +1,15 @@
+<section class="page">
+  <div class="head">
+    <h2>Notifications</h2>
+    <button type="button" (click)="markAllRead()">Mark all as read</button>
+  </div>
+
+  <article class="notice" *ngFor="let item of items" [class.read]="item.isRead">
+    <div>
+      <h3>{{ item.title }}</h3>
+      <p>{{ item.message }}</p>
+      <small>{{ item.type }} | {{ item.createdAtUtc | date:'medium' }}</small>
+    </div>
+    <button *ngIf="!item.isRead" type="button" (click)="markRead(item.id)">Mark as Read</button>
+  </article>
+</section>
