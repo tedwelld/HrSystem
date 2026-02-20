@@ -1,4 +1,4 @@
-<div class="shell" (window:resize)="onResize()">
+<div class="shell" [class.sidebar-hidden]="!sidebarOpen() && !isMobile()" (window:resize)="onResize()">
   <div class="liquid-orb orb-a"></div>
   <div class="liquid-orb orb-b"></div>
   <div class="liquid-orb orb-c"></div>

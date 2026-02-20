@@ -1,0 +1,31 @@
+# Build outputs
+**/bin/
+**/obj/
+
+# Visual Studio / IDE
+.vs/
+**/.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.slnLaunch.user
+
+# Node / Angular
+**/node_modules/
+hr-system-web/.angular/
+hr-system-web/dist/
+hr-system-web/coverage/
+hr-system-web/serve.log
+npm-debug.log*
+yarn-error.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Runtime uploads
+HrSystem.Api/Storage/Cvs/*
+!HrSystem.Api/Storage/Cvs/.gitkeep
