@@ -4,6 +4,8 @@ import { environment } from '../../../environments/environment';
 import {
   AdminDashboard,
   AdminCompany,
+  CreateAdminCompanyRequest,
+  CreateHrAdminRequest,
   AdminEmailSendResult,
   AdminUser,
   AppNotification,
@@ -88,6 +90,15 @@ export class HrApiService {
     return this.http.post(`${environment.apiBaseUrl}/applications/admin/update-stage`, payload);
   }
 
+  reviewApplication(payload: {
+    applicationId: number;
+    stage: string;
+    testScore?: number;
+    reply: string;
+  }) {
+    return this.http.post<JobApplication>(`${environment.apiBaseUrl}/applications/admin/review`, payload);
+  }
+
   addFollowUp(payload: { applicationId: number; note: string }) {
     return this.http.post(`${environment.apiBaseUrl}/applications/admin/follow-up`, payload);
   }
@@ -107,7 +118,7 @@ export class HrApiService {
     return this.http.post<CvProfile>(`${environment.apiBaseUrl}/cv/structured`, payload);
   }
 
-  uploadTextCv(file: File) {
+  uploadCvFile(file: File) {
     const formData = new FormData();
     formData.append('File', file);
     return this.http.post<CvProfile>(`${environment.apiBaseUrl}/cv/text-upload`, formData);
@@ -157,6 +168,10 @@ export class HrApiService {
     return this.http.get<AdminUser[]>(`${environment.apiBaseUrl}/admin/management/users`);
   }
 
+  createHrAdmin(payload: CreateHrAdminRequest) {
+    return this.http.post<AdminUser>(`${environment.apiBaseUrl}/admin/management/users/hr-admin`, payload);
+  }
+
   updateAdminUser(userId: number, payload: {
     firstName: string;
     lastName: string;
@@ -167,8 +182,16 @@ export class HrApiService {
     return this.http.put<AdminUser>(`${environment.apiBaseUrl}/admin/management/users/${userId}`, payload);
   }
 
+  deleteAdminUser(userId: number) {
+    return this.http.delete(`${environment.apiBaseUrl}/admin/management/users/${userId}`);
+  }
+
   getAdminCompanies() {
     return this.http.get<AdminCompany[]>(`${environment.apiBaseUrl}/admin/management/companies`);
+  }
+
+  createAdminCompany(payload: CreateAdminCompanyRequest) {
+    return this.http.post<AdminCompany>(`${environment.apiBaseUrl}/admin/management/companies`, payload);
   }
 
   updateAdminCompany(companyId: number, payload: {
@@ -183,7 +206,17 @@ export class HrApiService {
     return this.http.put<AdminCompany>(`${environment.apiBaseUrl}/admin/management/companies/${companyId}`, payload);
   }
 
-  sendAdminEmail(payload: { userIds: number[]; includeAllCandidates: boolean; subject: string; message: string }) {
+  deleteAdminCompany(companyId: number) {
+    return this.http.delete(`${environment.apiBaseUrl}/admin/management/companies/${companyId}`);
+  }
+
+  sendAdminEmail(payload: {
+    userIds: number[];
+    includeAllUsers: boolean;
+    includeAllCandidates: boolean;
+    subject: string;
+    message: string;
+  }) {
     return this.http.post<AdminEmailSendResult>(`${environment.apiBaseUrl}/admin/management/send-email`, payload);
   }
 }

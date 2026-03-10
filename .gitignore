@@ -25,6 +25,7 @@ pnpm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
+.env
 
 # Runtime uploads
 HrSystem.Api/Storage/Cvs/*

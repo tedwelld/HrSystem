@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../core/services/auth.service';
+import { PdfExportService } from '../core/services/pdf-export.service';
 import { HrApiService } from '../core/services/hr-api.service';
 import { CvProfile, JobPosting } from '../core/models/api.models';
 
@@ -27,6 +28,7 @@ interface JobFormState {
 export class JobsComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly api = inject(HrApiService);
+  private readonly pdfExport = inject(PdfExportService);
 
   readonly role = computed(() => this.authService.user()?.role ?? 'Candidate');
 
@@ -58,6 +60,7 @@ export class JobsComponent implements OnInit {
 
   jobs: JobPosting[] = [];
   cvProfiles: CvProfile[] = [];
+  jobSearch = '';
 
   loading = false;
   error = '';
@@ -74,7 +77,7 @@ export class JobsComponent implements OnInit {
   editingJobId: number | null = null;
 
   structuredCv = {
-    fileName: 'candidate-cv.json',
+    fileName: 'required-cv-template.json',
     fullText: '',
     skillsCsv: '',
     educationSummary: '',
@@ -87,6 +90,19 @@ export class JobsComponent implements OnInit {
   ngOnInit(): void {
     this.applyPreset('new', this.selectedNewPreset);
     this.load();
+  }
+
+  get filteredJobs() {
+    const query = this.jobSearch.trim().toLowerCase();
+    return this.jobs.filter(
+      (job) =>
+        !query ||
+        job.title.toLowerCase().includes(query) ||
+        job.companyName.toLowerCase().includes(query) ||
+        job.location.toLowerCase().includes(query) ||
+        job.description.toLowerCase().includes(query) ||
+        job.requiredSkills.some((skill) => skill.toLowerCase().includes(query))
+    );
   }
 
   load() {
@@ -280,15 +296,15 @@ export class JobsComponent implements OnInit {
     this.selectedFile = input.files?.[0] ?? null;
   }
 
-  uploadTextCv() {
+  uploadCvFile() {
     if (!this.selectedFile) {
       this.error = 'Select a file first.';
       return;
     }
 
-    this.api.uploadTextCv(this.selectedFile).subscribe({
+    this.api.uploadCvFile(this.selectedFile).subscribe({
       next: () => {
-        this.success = 'Text CV uploaded.';
+        this.success = 'CV file uploaded.';
         this.selectedFile = null;
         this.loadCvProfiles();
       },
@@ -311,6 +327,30 @@ export class JobsComponent implements OnInit {
     }
 
     this.editJob.requiredSkillsCsv = csv;
+  }
+
+  trackJob(_: number, job: JobPosting) {
+    return job.id;
+  }
+
+  trackCv(_: number, cv: CvProfile) {
+    return cv.id;
+  }
+
+  exportJobsPdf() {
+    void this.pdfExport.exportTable(
+      'Jobs and Vacancies',
+      'jobs-and-vacancies.pdf',
+      ['Title', 'Company', 'Location', 'Type', 'Level', 'Status'],
+      this.filteredJobs.map((job) => [
+        job.title,
+        job.companyName,
+        job.location,
+        job.employmentType,
+        job.experienceLevel,
+        job.isOpen ? 'Open' : 'Closed'
+      ])
+    );
   }
 
   private createDefaultJob(): JobFormState {

@@ -1,10 +1,11 @@
-<div class="shell" [class.sidebar-hidden]="!sidebarOpen() && !isMobile()" (window:resize)="onResize()">
-  <div class="liquid-orb orb-a"></div>
-  <div class="liquid-orb orb-b"></div>
-  <div class="liquid-orb orb-c"></div>
+<div
+  class="shell"
+  [class.sidebar-expanded]="sidebarExpanded()"
+  [class.sidebar-collapsed]="!sidebarExpanded() && !isMobile()"
+  (window:resize)="onResize()">
   <header class="topbar">
     <div class="left-head">
-      <button class="icon-btn" type="button" (click)="toggleSidebar()">
+      <button class="icon-btn btn-blue mobile-only" type="button" (click)="toggleSidebar()">
         <i class="fa-solid fa-bars"></i>
       </button>
       <div class="brand">
@@ -17,15 +18,11 @@
     </div>
 
     <div class="header-tools">
-      <div class="clock">{{ now() | date:'mediumTime' }}</div>
+      <div class="clock">{{ now() | date:'shortTime' }}</div>
 
-      <button class="icon-btn bell" type="button" (click)="toggleNotificationPanel()" aria-label="Notifications">
+      <button class="icon-btn btn-blue bell" type="button" (click)="toggleNotificationPanel()" aria-label="Notifications">
         <i class="fa-solid fa-bell"></i>
         <span class="badge" *ngIf="unreadCount() > 0">{{ unreadCount() }}</span>
-      </button>
-
-      <button class="icon-btn" type="button" (click)="toggleTheme()">
-        <i [class]="theme() === 'light' ? 'fa-solid fa-moon' : 'fa-solid fa-sun'"></i>
       </button>
 
       <div class="user-zone" *ngIf="user() as currentUser">
@@ -33,32 +30,39 @@
           <strong>{{ currentUser.firstName }} {{ currentUser.lastName }}</strong>
           <span>{{ currentUser.role }}</span>
         </div>
-        <button type="button" (click)="logout()">Logout</button>
+        <button type="button" class="btn btn-red" (click)="logout()">Logout</button>
       </div>
     </div>
   </header>
 
-  <aside class="sidebar" [class.open]="sidebarOpen()" [class.collapsed]="!sidebarOpen() && !isMobile()">
+  <aside
+    class="sidebar"
+    [class.open]="sidebarExpanded()"
+    [class.collapsed]="!sidebarExpanded() && !isMobile()"
+    (mouseenter)="setSidebarHovered(true)"
+    (mouseleave)="setSidebarHovered(false)">
     <div class="sidebar-top">
       <h3>Navigation</h3>
-      <button class="close-btn" type="button" (click)="toggleSidebar()"><i class="fa-solid fa-xmark"></i></button>
+      <button class="close-btn btn-red" type="button" (click)="toggleSidebar()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
 
-    <label class="auto-hide-row">
+    <label class="auto-hide-row" *ngIf="isMobile()">
       <input type="checkbox" [checked]="autoHideSidebar()" (change)="toggleAutoHide()" />
-      Auto hide sidebar after click
+      Auto close drawer after navigation
     </label>
 
-    <section class="group" *ngFor="let group of groupedNav()">
+    <section class="group" *ngFor="let group of groupedNav(); trackBy: trackGroup">
       <h4>{{ group.label }}</h4>
       <button
-        *ngFor="let item of group.items"
+        *ngFor="let item of group.items; trackBy: trackNav"
         type="button"
         class="nav-card"
         [class.active]="isActive(item.path)"
         (click)="navigate(item.path)">
         <i [class]="item.icon"></i>
-        {{ item.label }}
+        <span>{{ item.label }}</span>
       </button>
     </section>
   </aside>
@@ -66,19 +70,23 @@
   <section class="notif-panel" *ngIf="showNotificationPanel()">
     <div class="panel-head">
       <h4>Alerts</h4>
-      <button type="button" (click)="markAllAsRead()">Mark all read</button>
+      <button type="button" class="btn btn-green" (click)="markAllAsRead()">Mark all read</button>
     </div>
 
-    <article class="notif-item" *ngFor="let item of notifications()">
+    <article class="notif-item" *ngFor="let item of notifications(); trackBy: trackNotification">
       <div>
         <strong>{{ item.title }}</strong>
         <p>{{ item.message }}</p>
         <small>{{ item.createdAtUtc | date:'short' }}</small>
       </div>
-      <button *ngIf="!item.isRead" type="button" (click)="markAsRead(item.id)">Read</button>
+      <button *ngIf="!item.isRead" type="button" class="btn btn-green" (click)="markAsRead(item.id)">
+        Read
+      </button>
     </article>
 
-    <button type="button" class="view-all" (click)="navigate('/app/notifications')">View all notifications</button>
+    <button type="button" class="btn btn-blue view-all" (click)="navigate('/app/notifications')">
+      View all notifications
+    </button>
   </section>
 
   <main class="content">

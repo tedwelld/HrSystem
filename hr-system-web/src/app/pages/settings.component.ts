@@ -2,8 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../core/services/auth.service';
+import { PdfExportService } from '../core/services/pdf-export.service';
 import { HrApiService } from '../core/services/hr-api.service';
-import { AdminCompany, AdminUser, UserProfile, UserPreference } from '../core/models/api.models';
+import {
+  AdminCompany,
+  AdminUser,
+  CreateAdminCompanyRequest,
+  CreateHrAdminRequest,
+  UserProfile,
+  UserPreference
+} from '../core/models/api.models';
 
 @Component({
   selector: 'app-settings',
@@ -15,6 +23,7 @@ import { AdminCompany, AdminUser, UserProfile, UserPreference } from '../core/mo
 export class SettingsComponent implements OnInit {
   private readonly api = inject(HrApiService);
   private readonly auth = inject(AuthService);
+  private readonly pdfExport = inject(PdfExportService);
 
   readonly isAdmin = computed(() => this.auth.isAdmin());
 
@@ -29,9 +38,13 @@ export class SettingsComponent implements OnInit {
   users: AdminUser[] = [];
   companies: AdminCompany[] = [];
   selectedUserIds: number[] = [];
+  candidateSearch = '';
+  sendToAllUsers = false;
   sendToAllCandidates = false;
   emailSubject = '';
   emailMessage = '';
+  hrAdminDraft: CreateHrAdminRequest = this.createEmptyHrAdminDraft();
+  companyDraft: CreateAdminCompanyRequest = this.createEmptyCompanyDraft();
 
   loading = false;
   error = '';
@@ -39,6 +52,22 @@ export class SettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadBase();
+  }
+
+  get candidateUsers() {
+    const query = this.candidateSearch.trim().toLowerCase();
+    return this.users.filter(
+      (user) =>
+        user.role === 'Candidate' &&
+        (!query ||
+          `${user.firstName} ${user.lastName}`.toLowerCase().includes(query) ||
+          user.email.toLowerCase().includes(query) ||
+          user.phoneNumber.toLowerCase().includes(query))
+    );
+  }
+
+  get hrAdminUsers() {
+    return this.users.filter((user) => user.role === 'Admin');
   }
 
   loadBase() {
@@ -57,7 +86,7 @@ export class SettingsComponent implements OnInit {
     });
 
     this.api.getMyPreference().subscribe((pref) => {
-      this.preferences = pref;
+      this.preferences = { ...pref, theme: 'light' };
     });
 
     if (this.isAdmin()) {
@@ -111,13 +140,13 @@ export class SettingsComponent implements OnInit {
   savePreferences() {
     this.api
       .updateMyPreference({
-        theme: this.preferences.theme,
+        theme: 'light',
         autoHideSidebar: this.preferences.autoHideSidebar
       })
       .subscribe({
         next: (updated) => {
-          this.preferences = updated;
-          document.body.setAttribute('data-theme', updated.theme);
+          this.preferences = { ...updated, theme: 'light' };
+          document.body.setAttribute('data-theme', 'light');
           this.success = 'Preferences saved.';
         },
         error: (err) => {
@@ -149,6 +178,40 @@ export class SettingsComponent implements OnInit {
       });
   }
 
+  createHrAdmin() {
+    this.api.createHrAdmin(this.hrAdminDraft).subscribe({
+      next: (created) => {
+        this.users = [created, ...this.users];
+        this.hrAdminDraft = this.createEmptyHrAdminDraft();
+        this.success = `Created HR admin ${created.email}.`;
+        this.error = '';
+      },
+      error: (err) => {
+        this.error = err?.error?.message ?? 'Could not create HR admin.';
+        this.success = '';
+      }
+    });
+  }
+
+  deleteUser(user: AdminUser) {
+    if (!window.confirm(`Deactivate ${user.email}?`)) {
+      return;
+    }
+
+    this.api.deleteAdminUser(user.id).subscribe({
+      next: () => {
+        this.users = this.users.map((item) => (item.id === user.id ? { ...item, isActive: false } : item));
+        this.selectedUserIds = this.selectedUserIds.filter((id) => id !== user.id);
+        this.success = `${user.email} deactivated.`;
+        this.error = '';
+      },
+      error: (err) => {
+        this.error = err?.error?.message ?? 'Could not deactivate user.';
+        this.success = '';
+      }
+    });
+  }
+
   saveCompany(company: AdminCompany) {
     this.api
       .updateAdminCompany(company.id, {
@@ -174,22 +237,87 @@ export class SettingsComponent implements OnInit {
       });
   }
 
+  createCompany() {
+    this.api.createAdminCompany(this.companyDraft).subscribe({
+      next: (created) => {
+        this.companies = [created, ...this.companies];
+        this.companyDraft = this.createEmptyCompanyDraft();
+        this.success = `Created company ${created.name}.`;
+        this.error = '';
+      },
+      error: (err) => {
+        this.error = err?.error?.message ?? 'Could not create company.';
+        this.success = '';
+      }
+    });
+  }
+
+  deleteCompany(company: AdminCompany) {
+    if (!window.confirm(`Delete company ${company.name}?`)) {
+      return;
+    }
+
+    this.api.deleteAdminCompany(company.id).subscribe({
+      next: () => {
+        this.companies = this.companies.filter((item) => item.id !== company.id);
+        this.success = `Deleted company ${company.name}.`;
+        this.error = '';
+      },
+      error: (err) => {
+        this.error = err?.error?.message ?? 'Could not delete company.';
+        this.success = '';
+      }
+    });
+  }
+
   sendEmail() {
+    const subject = this.emailSubject.trim();
+    const message = this.emailMessage.trim();
+
+    if (!subject || !message) {
+      this.error = 'Subject and message are required.';
+      this.success = '';
+      return;
+    }
+
+    if (!this.sendToAllUsers && !this.sendToAllCandidates && this.selectedUserIds.length === 0) {
+      this.error = 'Select at least one recipient, or choose all candidates/all users.';
+      this.success = '';
+      return;
+    }
+
     this.api
       .sendAdminEmail({
         userIds: this.selectedUserIds,
+        includeAllUsers: this.sendToAllUsers,
         includeAllCandidates: this.sendToAllCandidates,
-        subject: this.emailSubject,
-        message: this.emailMessage
+        subject,
+        message
       })
       .subscribe({
         next: (result) => {
           this.success = `Emails sent: ${result.successfullySent}/${result.requestedRecipients}, failed: ${result.failed}.`;
+          this.error = '';
         },
         error: (err) => {
           this.error = err?.error?.message ?? 'Could not send emails.';
+          this.success = '';
         }
       });
+  }
+
+  onAllUsersChanged(checked: boolean) {
+    this.sendToAllUsers = checked;
+    if (checked) {
+      this.sendToAllCandidates = false;
+    }
+  }
+
+  onAllCandidatesChanged(checked: boolean) {
+    this.sendToAllCandidates = checked;
+    if (checked) {
+      this.sendToAllUsers = false;
+    }
   }
 
   toggleRecipient(userId: number, checked: boolean) {
@@ -199,5 +327,51 @@ export class SettingsComponent implements OnInit {
     }
 
     this.selectedUserIds = this.selectedUserIds.filter((x) => x !== userId);
+  }
+
+  trackUser(_: number, user: AdminUser) {
+    return user.id;
+  }
+
+  trackCompany(_: number, company: AdminCompany) {
+    return company.id;
+  }
+
+  exportCandidatesPdf() {
+    void this.pdfExport.exportTable(
+      'Registered Candidates',
+      'registered-candidates.pdf',
+      ['Name', 'Email', 'Phone', 'Role', 'Active', 'Registered'],
+      this.candidateUsers.map((user) => [
+        `${user.firstName} ${user.lastName}`,
+        user.email,
+        user.phoneNumber || '-',
+        user.role,
+        user.isActive ? 'Yes' : 'No',
+        new Date(user.createdAtUtc).toLocaleString()
+      ])
+    );
+  }
+
+  private createEmptyHrAdminDraft(): CreateHrAdminRequest {
+    return {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phoneNumber: '',
+      password: ''
+    };
+  }
+
+  private createEmptyCompanyDraft(): CreateAdminCompanyRequest {
+    return {
+      name: '',
+      address: '',
+      city: '',
+      country: '',
+      phone: '',
+      email: '',
+      description: ''
+    };
   }
 }

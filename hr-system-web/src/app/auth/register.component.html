@@ -1,37 +1,99 @@
 <section class="auth-wrap">
-  <form class="auth-card" (ngSubmit)="submit()">
-    <h2>Create Account</h2>
-    <p>Register as candidate or HR admin.</p>
+  <div class="auth-scene">
+    <div class="auth-backdrop"></div>
 
-    <label>First Name</label>
-    <input [(ngModel)]="firstName" name="firstName" required />
+    <section class="auth-frame register-layout">
+      <aside class="auth-tab">
+        <span>REGISTER</span>
+      </aside>
 
-    <label>Last Name</label>
-    <input [(ngModel)]="lastName" name="lastName" required />
+      <section class="auth-story">
+        <div class="story-brand">
+          <i class="fa-solid fa-handshake"></i>
+          <span>HrSystem</span>
+        </div>
 
-    <label>Email</label>
-    <input type="email" [(ngModel)]="email" name="email" required />
+        <h1>Build your profile and enter the hiring pipeline.</h1>
+        <p>
+          Candidates can apply and track progress, while HR admins can manage jobs, updates and
+          recruitment activity from one place.
+        </p>
 
-    <label>Phone Number</label>
-    <input [(ngModel)]="phoneNumber" name="phoneNumber" />
+        <ol class="story-steps">
+          <li>
+            <span class="step-icon"><i class="fa-solid fa-id-card"></i></span>
+            <div>
+              <strong>Create Your Profile</strong>
+              <small>Add your basic details and choose your access level.</small>
+            </div>
+          </li>
+          <li>
+            <span class="step-icon"><i class="fa-solid fa-briefcase"></i></span>
+            <div>
+              <strong>Explore Opportunities</strong>
+              <small>Browse roles, upload CVs and manage applications.</small>
+            </div>
+          </li>
+          <li>
+            <span class="step-icon"><i class="fa-solid fa-user-shield"></i></span>
+            <div>
+              <strong>Manage Hiring Securely</strong>
+              <small>HR admins can unlock elevated access using the invite code.</small>
+            </div>
+          </li>
+        </ol>
 
-    <label>Password</label>
-    <input type="password" [(ngModel)]="password" name="password" required minlength="8" />
+        <a routerLink="/login" class="story-link">Already have an account?</a>
+      </section>
 
-    <label>Role</label>
-    <select [(ngModel)]="role" name="role">
-      <option value="Candidate">Candidate</option>
-      <option value="Admin">HR Admin</option>
-    </select>
+      <form class="auth-panel auth-panel-wide" (ngSubmit)="submit()">
+        <div class="panel-icon">
+          <i class="fa-solid fa-user-plus"></i>
+        </div>
 
-    <ng-container *ngIf="role === 'Admin'">
-      <label>Admin Invite Code</label>
-      <input [(ngModel)]="adminInviteCode" name="adminInviteCode" />
-    </ng-container>
+        <div class="panel-head">
+          <h2>Create Account</h2>
+          <p>Self-registration creates a candidate account.</p>
+        </div>
 
-    <button type="submit" [disabled]="loading">{{ loading ? 'Creating...' : 'Register' }}</button>
+        <div class="field-grid">
+          <label>
+            First Name
+            <input [(ngModel)]="firstName" name="firstName" required />
+          </label>
 
-    <small class="error" *ngIf="error">{{ error }}</small>
-    <p class="switch">Already have an account? <a routerLink="/login">Sign in</a></p>
-  </form>
+          <label>
+            Last Name
+            <input [(ngModel)]="lastName" name="lastName" required />
+          </label>
+
+          <label>
+            Email
+            <input type="email" [(ngModel)]="email" name="email" required />
+          </label>
+
+          <label>
+            Phone Number
+            <input [(ngModel)]="phoneNumber" name="phoneNumber" />
+          </label>
+
+          <label>
+            Password
+            <input type="password" [(ngModel)]="password" name="password" required minlength="8" />
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-blue auth-submit" [disabled]="loading">
+          {{ loading ? 'Creating...' : 'Register' }}
+        </button>
+
+        <small class="error" *ngIf="error">{{ error }}</small>
+
+        <div class="panel-footer">
+          <a routerLink="/login">Sign in</a>
+          <span>HR admins are created by existing admins only</span>
+        </div>
+      </form>
+    </section>
+  </div>
 </section>

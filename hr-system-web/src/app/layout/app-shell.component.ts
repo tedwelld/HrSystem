@@ -79,14 +79,15 @@ export class AppShellComponent implements OnInit, OnDestroy {
   });
 
   readonly now = signal(new Date());
-  readonly sidebarOpen = signal(window.innerWidth >= 1080);
+  readonly sidebarOpen = signal(false);
   readonly isMobile = signal(window.innerWidth < 1080);
   readonly autoHideSidebar = signal(true);
-  readonly theme = signal<'light' | 'dark'>('light');
+  readonly sidebarHovered = signal(false);
   readonly notifications = signal<AppNotification[]>([]);
   readonly unreadCount = signal(0);
   readonly showNotificationPanel = signal(false);
   readonly currentPath = signal('');
+  readonly sidebarExpanded = computed(() => (this.isMobile() ? this.sidebarOpen() : this.sidebarHovered()));
 
   private clockHandle?: ReturnType<typeof setInterval>;
   private notificationHandle?: ReturnType<typeof setInterval>;
@@ -95,10 +96,11 @@ export class AppShellComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.currentPath.set(this.router.url);
     this.loadPreference();
-    this.loadNotifications();
+    this.loadUnreadCount();
+    this.onResize();
 
-    this.clockHandle = setInterval(() => this.now.set(new Date()), 1000);
-    this.notificationHandle = setInterval(() => this.loadNotifications(), 15000);
+    this.clockHandle = setInterval(() => this.now.set(new Date()), 30000);
+    this.notificationHandle = setInterval(() => this.refreshNotifications(), 60000);
 
     this.routerEventsSub = this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
       this.currentPath.set(this.router.url);
@@ -120,11 +122,26 @@ export class AppShellComponent implements OnInit, OnDestroy {
     this.isMobile.set(mobile);
     if (mobile) {
       this.sidebarOpen.set(false);
+      return;
     }
+
+    this.sidebarOpen.set(false);
   }
 
   toggleSidebar() {
+    if (!this.isMobile()) {
+      return;
+    }
+
     this.sidebarOpen.set(!this.sidebarOpen());
+  }
+
+  setSidebarHovered(isHovered: boolean) {
+    if (this.isMobile()) {
+      return;
+    }
+
+    this.sidebarHovered.set(isHovered);
   }
 
   onNavClick() {
@@ -152,32 +169,60 @@ export class AppShellComponent implements OnInit, OnDestroy {
     return current === path || current.startsWith(`${path}/`);
   }
 
-  toggleTheme() {
-    const next = this.theme() === 'light' ? 'dark' : 'light';
-    this.theme.set(next);
-    this.applyTheme(next);
-    this.persistPreference();
-  }
-
   toggleAutoHide() {
     this.autoHideSidebar.set(!this.autoHideSidebar());
     this.persistPreference();
   }
 
   toggleNotificationPanel() {
-    this.showNotificationPanel.set(!this.showNotificationPanel());
+    const next = !this.showNotificationPanel();
+    this.showNotificationPanel.set(next);
+    if (next) {
+      this.loadNotifications();
+    }
   }
 
   markAsRead(id: number) {
-    this.api.markNotificationAsRead(id).subscribe(() => this.loadNotifications());
+    this.api.markNotificationAsRead(id).subscribe(() => {
+      this.loadNotifications();
+      this.loadUnreadCount();
+    });
   }
 
   markAllAsRead() {
-    this.api.markAllNotificationsAsRead().subscribe(() => this.loadNotifications());
+    this.api.markAllNotificationsAsRead().subscribe(() => {
+      this.loadNotifications();
+      this.loadUnreadCount();
+    });
   }
 
   logout() {
     this.authService.logout();
+  }
+
+  trackGroup(_: number, group: NavGroup) {
+    return group.label;
+  }
+
+  trackNav(_: number, item: NavItem) {
+    return item.path;
+  }
+
+  trackNotification(_: number, item: AppNotification) {
+    return item.id;
+  }
+
+  private refreshNotifications() {
+    if (document.hidden) {
+      return;
+    }
+
+    if (this.showNotificationPanel()) {
+      this.loadNotifications();
+      return;
+    }
+
+    this.loadUnreadCount();
   }
 
   private loadNotifications() {
@@ -187,16 +232,21 @@ export class AppShellComponent implements OnInit, OnDestroy {
     });
   }
 
+  private loadUnreadCount() {
+    this.api.getUnreadNotificationCount().subscribe({
+      next: ({ count }) => this.unreadCount.set(count),
+      error: () => this.unreadCount.set(0)
+    });
+  }
+
   private loadPreference() {
     this.api.getMyPreference().subscribe({
       next: (pref) => {
-        const safeTheme = pref.theme === 'dark' ? 'dark' : 'light';
-        this.theme.set(safeTheme);
         this.autoHideSidebar.set(pref.autoHideSidebar);
-        this.applyTheme(safeTheme);
+        this.applyTheme();
       },
       error: () => {
-        this.applyTheme('light');
+        this.applyTheme();
       }
     });
   }
@@ -204,13 +254,13 @@ export class AppShellComponent implements OnInit, OnDestroy {
   private persistPreference() {
     this.api
       .updateMyPreference({
-        theme: this.theme(),
+        theme: 'light',
         autoHideSidebar: this.autoHideSidebar()
       })
       .subscribe();
   }
 
-  private applyTheme(theme: 'light' | 'dark') {
-    document.body.setAttribute('data-theme', theme);
+  private applyTheme() {
+    document.body.setAttribute('data-theme', 'light');
   }
 }

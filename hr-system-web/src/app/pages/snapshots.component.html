@@ -1,5 +1,14 @@
 <section class="page">
-  <h2>System Snapshots</h2>
+  <div class="toolbar">
+    <div>
+      <h2>System Snapshots</h2>
+      <p>Search through the audit trail and export the filtered result set.</p>
+    </div>
+    <div class="toolbar-actions">
+      <input [(ngModel)]="searchTerm" placeholder="Search snapshots" />
+      <button type="button" class="btn btn-red" (click)="exportSnapshotsPdf()">Export PDF</button>
+    </div>
+  </div>
   <p class="error" *ngIf="error">{{ error }}</p>
 
   <div class="table-wrap" *ngIf="!loading; else loadingTpl">
@@ -16,7 +25,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let item of snapshots">
+        <tr *ngFor="let item of filteredSnapshots; trackBy: trackSnapshot">
           <td>{{ item.createdAtUtc | date:'medium' }}</td>
           <td>{{ item.actorName }}</td>
           <td>{{ item.source }}</td>

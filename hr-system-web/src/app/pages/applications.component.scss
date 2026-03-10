@@ -8,9 +8,8 @@
   background: var(--glass-bg);
   border: 1px solid var(--glass-line);
   border-radius: 16px;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   padding: 1rem;
+  box-shadow: var(--shadow-card);
 
   h3 {
     margin-top: 0;
@@ -21,26 +20,33 @@
   margin-top: 0.8rem;
   display: grid;
   gap: 0.6rem;
-  grid-template-columns: minmax(0, 170px) minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+  grid-template-columns: minmax(0, 170px) minmax(0, 140px) minmax(0, 1fr) minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
 
   select,
   input {
-    border: 1px solid var(--glass-line);
-    border-radius: 10px;
-    padding: 0.5rem;
     width: 100%;
-    background: color-mix(in srgb, var(--glass-bg) 72%, transparent);
-    color: var(--text-color);
   }
+}
 
-  button {
-    border: 1px solid var(--glass-line);
-    background: var(--accent-bg);
-    color: var(--accent-text);
-    border-radius: 10px;
-    padding: 0.55rem 0.8rem;
-    cursor: pointer;
-  }
+.cv-panel,
+.review-summary {
+  margin-top: 0.9rem;
+  border: 1px solid var(--glass-line);
+  border-radius: 14px;
+  background: var(--surface-muted);
+  padding: 0.85rem;
+}
+
+.cv-text {
+  max-height: 220px;
+  overflow: auto;
+  white-space: pre-wrap;
+  line-height: 1.55;
+  border: 1px solid var(--glass-line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.68);
+  padding: 0.75rem;
+  margin-top: 0.6rem;
 }
 
 .notes {

@@ -24,7 +24,7 @@ export class CandidateDashboardComponent implements OnInit {
       {
         label: 'My Applications',
         data: [],
-        backgroundColor: '#0f766e'
+        backgroundColor: '#2563eb'
       }
     ]
   };
@@ -50,7 +50,7 @@ export class CandidateDashboardComponent implements OnInit {
           {
             label: 'My Applications',
             data: data.myApplicationsByStatus.map((x) => x.value),
-            backgroundColor: '#0f766e'
+            backgroundColor: '#2563eb'
           }
         ]
       };

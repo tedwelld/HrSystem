@@ -14,6 +14,48 @@ public class AdminCompanyDto
     public string Description { get; set; } = string.Empty;
 }
 
+public class CreateAdminUserDto
+{
+    [Required, MaxLength(100)]
+    public string FirstName { get; set; } = string.Empty;
+
+    [Required, MaxLength(100)]
+    public string LastName { get; set; } = string.Empty;
+
+    [Required, EmailAddress, MaxLength(200)]
+    public string Email { get; set; } = string.Empty;
+
+    [Required, MaxLength(30)]
+    public string PhoneNumber { get; set; } = string.Empty;
+
+    [Required, MinLength(8), MaxLength(100)]
+    public string Password { get; set; } = string.Empty;
+}
+
+public class CreateCompanyDto
+{
+    [Required, MaxLength(200)]
+    public string Name { get; set; } = string.Empty;
+
+    [MaxLength(250)]
+    public string Address { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string City { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string Country { get; set; } = string.Empty;
+
+    [MaxLength(30)]
+    public string Phone { get; set; } = string.Empty;
+
+    [MaxLength(200)]
+    public string Email { get; set; } = string.Empty;
+
+    [MaxLength(2000)]
+    public string Description { get; set; } = string.Empty;
+}
+
 public class AdminUpdateCompanyDto
 {
     [Required, MaxLength(200)]
@@ -41,6 +83,7 @@ public class AdminUpdateCompanyDto
 public class AdminSendUserEmailDto
 {
     public List<int> UserIds { get; set; } = [];
+    public bool IncludeAllUsers { get; set; }
     public bool IncludeAllCandidates { get; set; }
 
     [Required, MaxLength(200)]

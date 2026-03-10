@@ -28,7 +28,7 @@
       </label>
     </div>
     <div class="actions">
-      <button type="button" (click)="saveProfile()">Save Profile</button>
+      <button type="button" class="btn btn-green" (click)="saveProfile()">Save Profile</button>
     </div>
   </section>
 
@@ -37,23 +37,58 @@
     <div class="grid">
       <label>
         Theme
-        <select [(ngModel)]="preferences.theme">
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
+        <input [ngModel]="'White'" disabled />
       </label>
       <label class="checkbox-row">
         <input type="checkbox" [(ngModel)]="preferences.autoHideSidebar" />
-        Auto hide sidebar after navigation
+        Auto close the mobile sidebar after navigation
       </label>
     </div>
     <div class="actions">
-      <button type="button" (click)="savePreferences()">Save Preferences</button>
+      <button type="button" class="btn btn-green" (click)="savePreferences()">Save Preferences</button>
     </div>
   </section>
 
   <section class="panel" *ngIf="isAdmin()">
-    <h3>Admin User Management</h3>
+    <h3>Create HR Admin</h3>
+    <div class="grid">
+      <label>
+        First Name
+        <input [(ngModel)]="hrAdminDraft.firstName" />
+      </label>
+      <label>
+        Last Name
+        <input [(ngModel)]="hrAdminDraft.lastName" />
+      </label>
+      <label>
+        Email
+        <input [(ngModel)]="hrAdminDraft.email" type="email" />
+      </label>
+      <label>
+        Phone
+        <input [(ngModel)]="hrAdminDraft.phoneNumber" />
+      </label>
+      <label class="wide">
+        Temporary Password
+        <input [(ngModel)]="hrAdminDraft.password" type="password" />
+      </label>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn btn-blue" (click)="createHrAdmin()">Create HR Admin</button>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="isAdmin()">
+    <div class="toolbar">
+      <div>
+        <h3>Registered Candidates</h3>
+        <p>Search and manage everyone who signed up as a candidate.</p>
+      </div>
+      <div class="toolbar-actions">
+        <input [(ngModel)]="candidateSearch" placeholder="Search candidates" />
+        <button type="button" class="btn btn-red" (click)="exportCandidatesPdf()">Export PDF</button>
+      </div>
+    </div>
     <div class="table-wrap">
       <table>
         <thead>
@@ -63,12 +98,13 @@
             <th>Phone</th>
             <th>Role</th>
             <th>Active</th>
-            <th>Edit</th>
+            <th>Save</th>
+            <th>Delete</th>
             <th>Email To</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let user of users">
+          <tr *ngFor="let user of candidateUsers; trackBy: trackUser">
             <td>
               <div class="inline-grid">
                 <input [(ngModel)]="user.firstName" />
@@ -84,7 +120,10 @@
               </select>
             </td>
             <td><input type="checkbox" [(ngModel)]="user.isActive" /></td>
-            <td><button type="button" (click)="saveUser(user)">Save</button></td>
+            <td><button type="button" class="btn btn-yellow" (click)="saveUser(user)">Save</button></td>
+            <td>
+              <button type="button" class="btn btn-red" (click)="deleteUser(user)">Deactivate</button>
+            </td>
             <td>
               <input
                 type="checkbox"
@@ -98,8 +137,78 @@
   </section>
 
   <section class="panel" *ngIf="isAdmin()">
+    <h3>HR Admin Accounts</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Active</th>
+            <th>Save</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of hrAdminUsers; trackBy: trackUser">
+            <td>
+              <div class="inline-grid">
+                <input [(ngModel)]="user.firstName" />
+                <input [(ngModel)]="user.lastName" />
+              </div>
+            </td>
+            <td>{{ user.email }}</td>
+            <td><input [(ngModel)]="user.phoneNumber" /></td>
+            <td><input type="checkbox" [(ngModel)]="user.isActive" /></td>
+            <td><button type="button" class="btn btn-yellow" (click)="saveUser(user)">Save</button></td>
+            <td><button type="button" class="btn btn-red" (click)="deleteUser(user)">Deactivate</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="isAdmin()">
+    <h3>Create Company</h3>
+    <div class="grid">
+      <label>
+        Name
+        <input [(ngModel)]="companyDraft.name" />
+      </label>
+      <label>
+        City
+        <input [(ngModel)]="companyDraft.city" />
+      </label>
+      <label>
+        Country
+        <input [(ngModel)]="companyDraft.country" />
+      </label>
+      <label class="wide">
+        Address
+        <input [(ngModel)]="companyDraft.address" />
+      </label>
+      <label>
+        Phone
+        <input [(ngModel)]="companyDraft.phone" />
+      </label>
+      <label>
+        Email
+        <input [(ngModel)]="companyDraft.email" />
+      </label>
+      <label class="wide">
+        Description
+        <textarea [(ngModel)]="companyDraft.description"></textarea>
+      </label>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn btn-blue" (click)="createCompany()">Create Company</button>
+    </div>
+  </section>
+
+  <section class="panel" *ngIf="isAdmin()">
     <h3>Admin Company Management</h3>
-    <article class="company-card" *ngFor="let company of companies">
+    <article class="company-card" *ngFor="let company of companies; trackBy: trackCompany">
       <div class="grid">
         <label>
           Name
@@ -131,7 +240,8 @@
         </label>
       </div>
       <div class="actions">
-        <button type="button" (click)="saveCompany(company)">Save Company</button>
+        <button type="button" class="btn btn-yellow" (click)="saveCompany(company)">Save Company</button>
+        <button type="button" class="btn btn-red" (click)="deleteCompany(company)">Delete Company</button>
       </div>
     </article>
   </section>
@@ -140,7 +250,17 @@
     <h3>Send Personalized Email (noreply@hrsystem.com)</h3>
     <div class="grid">
       <label class="checkbox-row">
-        <input type="checkbox" [(ngModel)]="sendToAllCandidates" />
+        <input
+          type="checkbox"
+          [ngModel]="sendToAllUsers"
+          (ngModelChange)="onAllUsersChanged($event)" />
+        Include all active users (admins + candidates)
+      </label>
+      <label class="checkbox-row">
+        <input
+          type="checkbox"
+          [ngModel]="sendToAllCandidates"
+          (ngModelChange)="onAllCandidatesChanged($event)" />
         Include all active candidates
       </label>
       <label>
@@ -156,7 +276,7 @@
       </label>
     </div>
     <div class="actions">
-      <button type="button" (click)="sendEmail()">Send Email</button>
+      <button type="button" class="btn btn-blue" (click)="sendEmail()">Send Email</button>
     </div>
   </section>
 </section>

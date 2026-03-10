@@ -4,6 +4,19 @@
   <p class="status success" *ngIf="success">{{ success }}</p>
   <p class="status error" *ngIf="error">{{ error }}</p>
 
+  <section class="panel toolbar-panel">
+    <div class="toolbar">
+      <div>
+        <h3>Search Jobs</h3>
+        <p>Filter vacancies by title, company, location, or skill.</p>
+      </div>
+      <div class="toolbar-actions">
+        <input [(ngModel)]="jobSearch" placeholder="Search jobs" />
+        <button type="button" class="btn btn-red" (click)="exportJobsPdf()">Export PDF</button>
+      </div>
+    </div>
+  </section>
+
   <section class="panel" *ngIf="role() === 'Admin'">
     <h3>Admin Job Management</h3>
 
@@ -65,8 +78,8 @@
     </div>
 
     <div class="actions">
-      <button type="button" (click)="resetCreateForm()">Add</button>
-      <button type="button" (click)="createJob()">Post</button>
+      <button type="button" class="btn btn-blue" (click)="resetCreateForm()">Add</button>
+      <button type="button" class="btn btn-green" (click)="createJob()">Post</button>
     </div>
   </section>
 
@@ -130,19 +143,23 @@
     </div>
 
     <div class="actions">
-      <button type="button" (click)="saveEdit()">Edit</button>
-      <button type="button" class="secondary" (click)="cancelEdit()">Cancel</button>
+      <button type="button" class="btn btn-yellow" (click)="saveEdit()">Edit</button>
+      <button type="button" class="btn btn-red" (click)="cancelEdit()">Cancel</button>
     </div>
   </section>
 
   <section class="panel" *ngIf="role() === 'Candidate'">
     <h3>Application Settings & CV Upload</h3>
+    <p class="helper-text">
+      Use the required CV template for structured uploads or upload a `.json`, `.txt`, or `.docx` CV file.
+      <a href="templates/required-cv-template.json" download>Download required template</a>
+    </p>
     <div class="grid">
       <label>
         CV Profile
         <select [(ngModel)]="selectedCvId">
           <option [ngValue]="undefined">Apply without CV profile</option>
-          <option *ngFor="let cv of cvProfiles" [ngValue]="cv.id">
+          <option *ngFor="let cv of cvProfiles; trackBy: trackCv" [ngValue]="cv.id">
             {{ cv.id }} - {{ cv.originalFileName }}
           </option>
         </select>
@@ -185,14 +202,14 @@
     </div>
 
     <div class="actions">
-      <button type="button" (click)="uploadStructuredCv()">Add Structured CV</button>
-      <input type="file" (change)="onFileSelected($event)" />
-      <button type="button" (click)="uploadTextCv()">Post Text CV</button>
+      <button type="button" class="btn btn-green" (click)="uploadStructuredCv()">Add Structured CV</button>
+      <input type="file" accept=".json,.txt,.docx" (change)="onFileSelected($event)" />
+      <button type="button" class="btn btn-green" (click)="uploadCvFile()">Upload CV File</button>
     </div>
   </section>
 
   <section class="jobs" *ngIf="!loading; else loadingTpl">
-    <article class="job-card" *ngFor="let job of jobs">
+    <article class="job-card" *ngFor="let job of filteredJobs; trackBy: trackJob">
       <div class="meta">
         <h3>{{ job.title }}</h3>
         <span>{{ job.companyName }} | {{ job.location }} | {{ job.employmentType }}</span>
@@ -203,14 +220,14 @@
       <p><strong>Salary:</strong> {{ job.salaryMin || 0 }} - {{ job.salaryMax || 0 }}</p>
 
       <div class="actions" *ngIf="role() === 'Candidate'">
-        <button type="button" (click)="apply(job.id)">Apply</button>
+        <button type="button" class="btn btn-green" (click)="apply(job.id)">Apply</button>
       </div>
 
       <div class="actions" *ngIf="role() === 'Admin'">
-        <button type="button" (click)="startEdit(job)">Edit</button>
-        <button type="button" (click)="deleteJob(job.id)">Delete</button>
-        <button type="button" *ngIf="job.isOpen" (click)="closeJob(job.id)">Close</button>
-        <button type="button" *ngIf="!job.isOpen" (click)="reopenJob(job)">Reopen</button>
+        <button type="button" class="btn btn-yellow" (click)="startEdit(job)">Edit</button>
+        <button type="button" class="btn btn-red" (click)="deleteJob(job.id)">Delete</button>
+        <button type="button" class="btn btn-red" *ngIf="job.isOpen" (click)="closeJob(job.id)">Close</button>
+        <button type="button" class="btn btn-blue" *ngIf="!job.isOpen" (click)="reopenJob(job)">Reopen</button>
       </div>
 
       <div class="badge" [class.closed]="!job.isOpen">{{ job.isOpen ? 'Open' : 'Closed' }}</div>

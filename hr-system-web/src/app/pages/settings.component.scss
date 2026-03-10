@@ -9,8 +9,7 @@
   background: var(--glass-bg);
   border-radius: 18px;
   padding: 1rem;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  box-shadow: var(--shadow-card);
 }
 
 .grid {
@@ -41,16 +40,6 @@ input,
 select,
 textarea {
   width: 100%;
-  border: 1px solid var(--glass-line);
-  border-radius: 12px;
-  padding: 0.58rem 0.68rem;
-  background: color-mix(in srgb, var(--glass-bg) 70%, transparent);
-  color: var(--text-color);
-}
-
-textarea {
-  min-height: 92px;
-  resize: vertical;
 }
 
 .table-wrap {
@@ -86,15 +75,31 @@ table {
   display: flex;
   gap: 0.6rem;
   flex-wrap: wrap;
+}
 
-  button {
-    border: 1px solid var(--glass-line);
-    background: var(--accent-bg);
-    color: var(--accent-text);
-    border-radius: 12px;
-    padding: 0.58rem 0.9rem;
-    cursor: pointer;
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+
+  h3,
+  p {
+    margin: 0;
   }
+
+  p {
+    color: var(--muted-color);
+    margin-top: 0.3rem;
+  }
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .status {
@@ -106,5 +111,17 @@ table {
 
   &.error {
     color: #b42318;
+  }
+}
+
+@media (max-width: 900px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

@@ -10,9 +10,8 @@
   border: 1px solid var(--glass-line);
   border-radius: 16px;
   background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   padding: 1rem;
+  box-shadow: var(--shadow-card);
 }
 
 .grid {
@@ -34,24 +33,51 @@
   input,
   select,
   textarea {
-    border: 1px solid var(--glass-line);
-    border-radius: 10px;
-    padding: 0.55rem 0.65rem;
-    font-family: inherit;
-    min-height: 42px;
-    background: color-mix(in srgb, var(--glass-bg) 72%, transparent);
-    color: var(--text-color);
     width: 100%;
-  }
-
-  textarea {
-    min-height: 84px;
   }
 }
 
 .jobs {
   display: grid;
   gap: 0.9rem;
+}
+
+.toolbar-panel {
+  padding-bottom: 0.7rem;
+}
+
+.helper-text {
+  margin-top: 0;
+  color: var(--muted-color);
+
+  a {
+    color: var(--link-color);
+    font-weight: 600;
+  }
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+
+  h3,
+  p {
+    margin: 0;
+  }
+
+  p {
+    margin-top: 0.3rem;
+    color: var(--muted-color);
+  }
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
 .job-card {
@@ -72,20 +98,6 @@
   gap: 0.6rem;
   flex-wrap: wrap;
   margin-top: 0.8rem;
-
-  button {
-    border: 1px solid var(--glass-line);
-    border-radius: 10px;
-    background: var(--accent-bg);
-    color: var(--accent-text);
-    padding: 0.6rem 0.9rem;
-    cursor: pointer;
-  }
-
-  .secondary {
-    background: color-mix(in srgb, var(--glass-bg) 75%, transparent);
-    color: var(--text-color);
-  }
 }
 
 .badge {
@@ -113,5 +125,17 @@
 
   &.error {
     color: #b42318;
+  }
+}
+
+@media (max-width: 860px) {
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toolbar-actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

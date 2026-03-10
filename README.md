@@ -82,6 +82,24 @@ Important sections:
 - `Sms` (`Enabled`, `ProviderName`, `FromNumber`)
 - `Storage:CvFolder` (defaults to `Storage/Cvs`)
 
+### SMTP noreply setup (`noreply@hrsystem.com`)
+
+Configure `HrSystem.Api/appsettings.json` (or environment-specific settings) under `Smtp`:
+
+- `Enabled`: `true`
+- `Host`: your SMTP server host
+- `Port`: your SMTP port (usually `587` for STARTTLS or `465` for SSL)
+- `UseSsl`: `true` for TLS-protected delivery
+- `UserName`: `noreply@hrsystem.com`
+- `Password`: the mailbox/app password
+- `FromAddress`: `noreply@hrsystem.com`
+- `FromName`: display sender name (for example `HR System`)
+
+After this is configured, admins can send campaigns from Settings:
+- `Include all active users` sends to all active admins and candidates.
+- `Include all active candidates` sends to all active candidates.
+- Selected checkboxes in the users table sends only chosen users.
+
 Frontend API base URL:
 - `hr-system-web/src/environments/environment.ts`
 - Current value: `http://localhost:55330/api`
@@ -142,6 +160,101 @@ API validation smoke test:
 .\scripts\validate-system.ps1
 ```
 
+## Docker Desktop Startup
+
+This repository also includes a full Docker Desktop setup for the API, frontend, SQL Server, and CV storage.
+
+### Docker files included
+
+- `docker-compose.yml`
+- `.env.docker.example`
+- `.dockerignore`
+- `HrSystem.Api/Dockerfile`
+- `HrSystem.Api/appsettings.Docker.json`
+- `hr-system-web/Dockerfile`
+- `hr-system-web/docker/nginx.conf`
+- `hr-system-web/docker/app-config.js`
+
+### Docker prerequisites
+
+- Docker Desktop
+- Docker Compose v2
+- Docker Desktop running in Linux containers mode
+
+### 1. Create a local Docker env file
+
+From repo root:
+
+```powershell
+Copy-Item .env.docker.example .env
+```
+
+You can run Docker without `.env` because `docker-compose.yml` has local defaults, but copying `.env.docker.example` to `.env` is recommended if you want to change ports, the SQL password, or the JWT secret.
+
+### 2. Build the Docker images
+
+```powershell
+docker compose build
+```
+
+### 3. Start the full system
+
+```powershell
+docker compose up -d
+docker compose ps
+```
+
+Or build and start in one command:
+
+```powershell
+docker compose up -d --build
+```
+
+### 4. Open the running system
+
+- Frontend: `http://localhost:4200`
+- API: `http://localhost:55330`
+- Swagger: `http://localhost:55330/swagger`
+- Health: `http://localhost:55330/health`
+- SQL Server from host tools: `localhost,14333`
+
+### Docker service names / containers
+
+- `sqlserver` / `hrsystem-sqlserver`
+- `api` / `hrsystem-api`
+- `web` / `hrsystem-web`
+
+### Docker logs and restart commands
+
+```powershell
+docker compose logs -f sqlserver
+docker compose logs -f api
+docker compose logs -f web
+
+docker compose restart sqlserver
+docker compose restart api
+docker compose restart web
+```
+
+### Stop or reset Docker containers
+
+Stop and remove containers:
+
+```powershell
+docker compose down
+```
+
+Stop and also remove database/CV volumes:
+
+```powershell
+docker compose down -v
+```
+
+### What Docker persists
+
+- SQL database data is stored in the `hrsystem_sql_data` named volume.
+- Uploaded CV files are stored in the `hrsystem_cv_data` named volume.
+
 ## Seeded Accounts (Development)
 
 Created automatically by `DataSeeder`:
@@ -172,6 +285,31 @@ Admin registration invite code (for role `Admin` during register):
 - `api/preferences`: user UI preferences
 - `api/admin/management`: users/companies/admin email
 
+## CV Upload And Review Flow
+
+Candidate CV uploads now support these file types:
+- `.json` using the required structured template
+- `.txt`
+- `.docx`
+
+Required template file:
+- `hr-system-web/public/templates/required-cv-template.json`
+
+Candidate flow:
+- Download the required template from the Jobs page.
+- Complete the CV in the required structure, or upload a `.txt` or `.docx` CV.
+- Upload the CV before applying for jobs so matching and review data can be generated.
+
+Admin flow:
+- Open the Admin Dashboard and use the `Candidate CV Reviews` panel.
+- Select a candidate application to view the uploaded CV content and score breakdown.
+- Enter a test score, choose the next application stage, and write a reply.
+- Save the review to update the application and notify the candidate.
+
+Notification behavior:
+- When an admin posts a new job, active candidates receive a notification.
+- When an admin reviews an application, the candidate receives a notification with the review outcome.
+
 ## Development Notes
 
 - CORS allows frontend on `localhost:4200` and `127.0.0.1:4200`.
@@ -188,6 +326,10 @@ Admin registration invite code (for role `Admin` during register):
   - Confirm `hr-system-web/src/environments/environment.ts` matches API URL.
 - `start-backend.ps1` fails initially:
   - Run `dotnet build HrSystem.Api/HrSystem.Api.csproj` first (script uses `--no-build`).
+- Docker containers fail to start:
+  - Run `docker compose ps` and `docker compose logs -f sqlserver`.
+  - If SQL Server password was changed, ensure `.env` and `docker-compose.yml` match.
+  - Reset the stack with `docker compose down -v` and then `docker compose up -d --build`.
 
 ## Security Note
 

@@ -1,18 +1,93 @@
 <section class="auth-wrap">
-  <form class="auth-card" (ngSubmit)="submit()">
-    <h2>Sign In</h2>
-    <p>Access candidate or HR admin dashboard.</p>
+  <div class="auth-scene">
+    <div class="auth-backdrop"></div>
 
-    <label>Email</label>
-    <input type="email" [(ngModel)]="email" name="email" required />
+    <section class="auth-frame login-layout">
+      <aside class="auth-tab">
+        <span>LOGIN</span>
+      </aside>
 
-    <label>Password</label>
-    <input type="password" [(ngModel)]="password" name="password" required />
+      <section class="auth-story">
+        <div class="story-brand">
+          <i class="fa-solid fa-handshake"></i>
+          <span>HrSystem</span>
+        </div>
 
-    <button type="submit" [disabled]="loading">{{ loading ? 'Signing in...' : 'Login' }}</button>
+        <h1>Recruit, review and move candidates faster.</h1>
+        <p>
+          A streamlined hiring workspace for HR teams and applicants, designed to keep the
+          entire recruitment process visible and moving.
+        </p>
 
-    <small class="error" *ngIf="error">{{ error }}</small>
+        <ol class="story-steps">
+          <li>
+            <span class="step-icon"><i class="fa-solid fa-user-plus"></i></span>
+            <div>
+              <strong>Register in Network</strong>
+              <small>Create a candidate or HR admin account.</small>
+            </div>
+          </li>
+          <li>
+            <span class="step-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <div>
+              <strong>Source Right Talent</strong>
+              <small>Track vacancies, matches and active applications.</small>
+            </div>
+          </li>
+          <li>
+            <span class="step-icon"><i class="fa-solid fa-users"></i></span>
+            <div>
+              <strong>Recruit Talent</strong>
+              <small>Coordinate notes, decisions and follow-ups.</small>
+            </div>
+          </li>
+          <li>
+            <span class="step-icon"><i class="fa-solid fa-file-signature"></i></span>
+            <div>
+              <strong>Process Offer</strong>
+              <small>Move approved candidates into the next stage quickly.</small>
+            </div>
+          </li>
+        </ol>
 
-    <p class="switch">No account? <a routerLink="/register">Create one</a></p>
-  </form>
+        <a routerLink="/register" class="story-link">Create account</a>
+      </section>
+
+      <form class="auth-panel" (ngSubmit)="submit()">
+        <div class="panel-icon">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+
+        <div class="panel-head">
+          <h2>Welcome Back</h2>
+          <p>Sign in to continue to the HR dashboard.</p>
+        </div>
+
+        <label>
+          Email
+          <input type="email" [(ngModel)]="email" name="email" required />
+        </label>
+
+        <label>
+          Password
+          <input type="password" [(ngModel)]="password" name="password" required />
+        </label>
+
+        <div class="panel-meta">
+          <span>Use your registered account credentials.</span>
+        </div>
+
+        <button type="submit" class="btn btn-blue auth-submit" [disabled]="loading">
+          {{ loading ? 'Signing in...' : 'Login' }}
+        </button>
+
+        <small class="error" *ngIf="error">{{ error }}</small>
+
+        <div class="panel-footer">
+          <a routerLink="/register">Create account</a>
+          <span>HR recruitment workspace</span>
+        </div>
+      </form>
+    </section>
+  </div>
 </section>

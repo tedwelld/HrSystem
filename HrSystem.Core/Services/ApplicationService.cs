@@ -252,6 +252,73 @@ public class ApplicationService(
         return true;
     }
 
+    public async Task<JobApplicationDto> ReviewApplicationAsync(int adminId, ReviewApplicationDto dto)
+    {
+        var admin = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == adminId && x.IsActive);
+        if (admin is null || admin.Role != UserRole.Admin)
+        {
+            throw new UnauthorizedAccessException("Only admin users can review applications.");
+        }
+
+        if (!Enum.TryParse<ApplicationStage>(dto.Stage, true, out var stage))
+        {
+            throw new InvalidOperationException("Invalid application stage.");
+        }
+
+        if (string.IsNullOrWhiteSpace(dto.Reply))
+        {
+            throw new InvalidOperationException("A review reply is required.");
+        }
+
+        var application = await _dbContext.JobApplications
+            .Include(x => x.JobPosting)
+            .Include(x => x.Candidate)
+            .Include(x => x.Scorecard)
+            .FirstOrDefaultAsync(x => x.Id == dto.ApplicationId);
+
+        if (application is null)
+        {
+            throw new InvalidOperationException("Application not found.");
+        }
+
+        application.Stage = stage;
+        application.UpdatedAtUtc = DateTime.UtcNow;
+
+        application.Scorecard ??= BuildScorecard(
+            application.MatchScore,
+            application.StrengthsSummary,
+            application.WeaknessesSummary,
+            application.CvProfileId.HasValue);
+
+        application.Scorecard.TestScore = dto.TestScore;
+        application.Scorecard.ReviewReply = dto.Reply.Trim();
+        application.Scorecard.ReviewedByAdminId = adminId;
+        application.Scorecard.ReviewedAtUtc = DateTime.UtcNow;
+
+        await _dbContext.SaveChangesAsync();
+
+        await _snapshotService.CaptureAsync(
+            actorUserId: adminId,
+            source: "Application",
+            action: "Review",
+            category: "JobApplication",
+            relatedEntityId: application.Id,
+            details: $"Reviewed application #{application.Id} and moved it to {application.Stage}.",
+            notifyAdmins: true);
+
+        await _notificationService.CreateNotificationAsync(
+            userId: application.CandidateId,
+            title: "Application reviewed",
+            message: $"{dto.Reply.Trim()} Current stage: {application.Stage}.",
+            type: NotificationType.ApplicationStatusUpdated,
+            relatedJobId: application.JobPostingId,
+            sendEmail: true,
+            sendSms: true);
+
+        return await BuildApplicationDtoAsync(application.Id)
+            ?? throw new InvalidOperationException("Application review was saved but could not be reloaded.");
+    }
+
     public async Task<FollowUpNoteDto> AddFollowUpNoteAsync(int adminId, CreateFollowUpNoteDto dto)
     {
         var admin = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == adminId && x.IsActive)
@@ -312,7 +379,9 @@ public class ApplicationService(
             .AsNoTracking()
             .Include(x => x.JobPosting)
             .Include(x => x.Candidate)
+            .Include(x => x.CvProfile)
             .Include(x => x.Scorecard)
+            .ThenInclude(x => x!.ReviewedByAdmin)
             .Include(x => x.FollowUpNotes)
             .ThenInclude(n => n.Admin)
             .FirstOrDefaultAsync(x => x.Id == id);
@@ -331,6 +400,13 @@ public class ApplicationService(
             CandidateName = entity.Candidate is null ? string.Empty : $"{entity.Candidate.FirstName} {entity.Candidate.LastName}",
             CandidateEmail = entity.Candidate?.Email ?? string.Empty,
             CvProfileId = entity.CvProfileId,
+            CvOriginalFileName = entity.CvProfile?.OriginalFileName ?? string.Empty,
+            CvMimeType = entity.CvProfile?.MimeType ?? string.Empty,
+            CvContentText = entity.CvProfile?.ContentText ?? string.Empty,
+            CvSkills = entity.CvProfile?.SkillsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList() ?? [],
+            CvEducationSummary = entity.CvProfile?.EducationSummary ?? string.Empty,
+            CvYearsOfExperience = entity.CvProfile?.YearsOfExperience ?? 0,
+            CvCertificationsSummary = entity.CvProfile?.CertificationsSummary ?? string.Empty,
             Stage = entity.Stage.ToString(),
             CoverLetter = entity.CoverLetter,
             StrengthsSummary = entity.StrengthsSummary,
@@ -341,6 +417,13 @@ public class ApplicationService(
             EducationScore = entity.Scorecard?.EducationScore ?? entity.MatchScore,
             CertificationsScore = entity.Scorecard?.CertificationsScore ?? entity.MatchScore,
             OverallScore = entity.Scorecard?.OverallScore ?? entity.MatchScore,
+            TestScore = entity.Scorecard?.TestScore,
+            AdminReply = entity.Scorecard?.ReviewReply ?? string.Empty,
+            ReviewedByAdminId = entity.Scorecard?.ReviewedByAdminId,
+            ReviewedByAdminName = entity.Scorecard?.ReviewedByAdmin is null
+                ? string.Empty
+                : $"{entity.Scorecard.ReviewedByAdmin.FirstName} {entity.Scorecard.ReviewedByAdmin.LastName}",
+            ReviewedAtUtc = entity.Scorecard?.ReviewedAtUtc,
             SubmittedAtUtc = entity.SubmittedAtUtc,
             FollowUpNotes = entity.FollowUpNotes
                 .OrderByDescending(x => x.CreatedAtUtc)

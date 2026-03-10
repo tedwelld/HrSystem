@@ -1,25 +1,21 @@
 using HrSystem.Core.Dtos.Auth;
 using HrSystem.Core.Dtos.Users;
 using HrSystem.Core.Interfaces;
-using HrSystem.Core.Options;
 using HrSystem.Data;
 using HrSystem.Data.EntityModels;
 using HrSystem.Data.EntityModels.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace HrSystem.Core.Services;
 
 public class AuthService(
     HrSystemDbContext dbContext,
     ITokenService tokenService,
-    IOptions<JwtOptions> jwtOptions,
     INotificationService notificationService,
     ISnapshotService snapshotService) : IAuthService
 {
     private readonly HrSystemDbContext _dbContext = dbContext;
     private readonly ITokenService _tokenService = tokenService;
-    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
     private readonly INotificationService _notificationService = notificationService;
     private readonly ISnapshotService _snapshotService = snapshotService;
 
@@ -32,15 +28,6 @@ public class AuthService(
             throw new InvalidOperationException("A user with this email already exists.");
         }
 
-        var requestedRole = dto.Role.Trim().Equals("admin", StringComparison.OrdinalIgnoreCase)
-            ? UserRole.Admin
-            : UserRole.Candidate;
-
-        if (requestedRole == UserRole.Admin && dto.AdminInviteCode != _jwtOptions.AdminInviteCode)
-        {
-            throw new UnauthorizedAccessException("Invalid admin invite code.");
-        }
-
         var user = new User
         {
             FirstName = dto.FirstName.Trim(),
@@ -48,7 +35,7 @@ public class AuthService(
             Email = normalizedEmail,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
             PhoneNumber = dto.PhoneNumber.Trim(),
-            Role = requestedRole,
+            Role = UserRole.Candidate,
             IsActive = true,
             CreatedAtUtc = DateTime.UtcNow,
             UpdatedAtUtc = DateTime.UtcNow
@@ -63,7 +50,7 @@ public class AuthService(
             action: "Register",
             category: "User",
             relatedEntityId: user.Id,
-            details: $"{user.Email} registered as {user.Role}.",
+            details: $"{user.Email} self-registered as Candidate.",
             notifyAdmins: true);
 
         var adminIds = await _dbContext.Users
@@ -77,7 +64,7 @@ public class AuthService(
             await _notificationService.CreateNotificationAsync(
                 userId: adminId,
                 title: "New user registration",
-                message: $"{user.FirstName} {user.LastName} registered as {user.Role}.",
+                message: $"{user.FirstName} {user.LastName} registered as Candidate.",
                 type: NotificationType.System,
                 relatedJobId: null,
                 sendEmail: false,

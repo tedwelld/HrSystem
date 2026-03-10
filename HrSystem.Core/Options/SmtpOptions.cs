@@ -10,6 +10,6 @@ public class SmtpOptions
     public bool UseSsl { get; set; } = true;
     public string UserName { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
-    public string FromAddress { get; set; } = "noreply@hrsytem.com";
+    public string FromAddress { get; set; } = "noreply@hrsystem.com";
     public string FromName { get; set; } = "HR System";
 }

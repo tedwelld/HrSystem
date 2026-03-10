@@ -118,6 +118,12 @@ public class HrSystemDbContext(DbContextOptions<HrSystemDbContext> options) : Db
             entity.Property(x => x.EducationScore).HasPrecision(5, 2);
             entity.Property(x => x.CertificationsScore).HasPrecision(5, 2);
             entity.Property(x => x.OverallScore).HasPrecision(5, 2);
+            entity.Property(x => x.TestScore).HasPrecision(5, 2);
+
+            entity.HasOne(x => x.ReviewedByAdmin)
+                .WithMany()
+                .HasForeignKey(x => x.ReviewedByAdminId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<InterviewSchedule>(entity =>

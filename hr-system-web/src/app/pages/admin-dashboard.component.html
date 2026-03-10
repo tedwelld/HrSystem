@@ -57,9 +57,82 @@
   </div>
 
   <div class="quick-actions">
-    <a routerLink="/app/settings" class="action-btn">Edit Users</a>
-    <a routerLink="/app/settings" class="action-btn">Edit Companies</a>
-    <a routerLink="/app/settings" class="action-btn">Send Candidate Emails</a>
-    <a routerLink="/app/snapshots" class="action-btn">Audit Snapshots</a>
+    <a routerLink="/app/settings" class="btn btn-blue action-btn">Edit Users</a>
+    <a routerLink="/app/settings" class="btn btn-blue action-btn">Edit Companies</a>
+    <a routerLink="/app/settings" class="btn btn-blue action-btn">Send Candidate Emails</a>
+    <a routerLink="/app/snapshots" class="btn btn-blue action-btn">Audit Snapshots</a>
+  </div>
+
+  <div class="review-grid" *ngIf="applications.length > 0">
+    <section class="chart-card review-list">
+      <h3>Candidate CV Reviews</h3>
+      <button
+        type="button"
+        class="review-card"
+        *ngFor="let app of applications"
+        [class.active]="app.id === selectedApplicationId"
+        (click)="selectApplication(app)">
+        <strong>{{ app.candidateName || app.candidateEmail }}</strong>
+        <span>{{ app.jobTitle }}</span>
+        <small>{{ app.stage }} | Match {{ app.matchScore }}%</small>
+      </button>
+    </section>
+
+    <section class="chart-card review-detail" *ngIf="selectedApplication as app">
+      <h3>Review {{ app.candidateName }}</h3>
+      <p><strong>Job:</strong> {{ app.jobTitle }}</p>
+      <p><strong>Email:</strong> {{ app.candidateEmail }}</p>
+      <p><strong>Cover Letter:</strong> {{ app.coverLetter || 'Not provided.' }}</p>
+
+      <div class="score-grid">
+        <div><strong>Skill Score</strong><span>{{ app.skillMatchScore }}%</span></div>
+        <div><strong>Experience</strong><span>{{ app.experienceScore }}%</span></div>
+        <div><strong>Education</strong><span>{{ app.educationScore }}%</span></div>
+        <div><strong>Certifications</strong><span>{{ app.certificationsScore }}%</span></div>
+        <div><strong>Overall</strong><span>{{ app.overallScore }}%</span></div>
+      </div>
+
+      <div class="cv-review-card">
+        <h4>Uploaded CV</h4>
+        <p><strong>File:</strong> {{ app.cvOriginalFileName || 'No CV attached' }}</p>
+        <p><strong>Skills:</strong> {{ app.cvSkills.join(', ') || 'No skills extracted' }}</p>
+        <p><strong>Education:</strong> {{ app.cvEducationSummary || 'Not provided' }}</p>
+        <p><strong>Experience:</strong> {{ app.cvYearsOfExperience }} years</p>
+        <p><strong>Certifications:</strong> {{ app.cvCertificationsSummary || 'Not provided' }}</p>
+        <div class="cv-text">{{ app.cvContentText || 'No CV content available.' }}</div>
+      </div>
+
+      <div class="review-form">
+        <label>
+          Next Stage
+          <select [(ngModel)]="reviewStage">
+            <option value="Applied">Applied</option>
+            <option value="UnderReview">Under Review</option>
+            <option value="Shortlisted">Shortlisted</option>
+            <option value="InterviewScheduled">Interview Scheduled</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Hired">Hired</option>
+          </select>
+        </label>
+
+        <label>
+          Test Score
+          <input type="number" min="0" max="100" [(ngModel)]="reviewTestScore" placeholder="0 - 100" />
+        </label>
+
+        <label class="wide">
+          Reply to Candidate
+          <textarea [(ngModel)]="reviewReply" placeholder="Explain the next step, interview, or hiring outcome."></textarea>
+        </label>
+      </div>
+
+      <p class="status success" *ngIf="reviewMessage">{{ reviewMessage }}</p>
+      <p class="status error" *ngIf="reviewError">{{ reviewError }}</p>
+
+      <div class="quick-actions">
+        <button type="button" class="btn btn-green action-btn" (click)="submitReview()">Save Review</button>
+        <a routerLink="/app/applications" class="btn btn-blue action-btn">Open Applications</a>
+      </div>
+    </section>
   </div>
 </section>

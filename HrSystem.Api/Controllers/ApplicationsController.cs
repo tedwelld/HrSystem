@@ -69,6 +69,24 @@ public class ApplicationsController(IApplicationService applicationService) : Co
         }
     }
 
+    [HttpPost("admin/review")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Review([FromBody] ReviewApplicationDto dto)
+    {
+        try
+        {
+            var userId = User.GetUserId();
+            if (!userId.HasValue) return Unauthorized();
+
+            var reviewed = await _applicationService.ReviewApplicationAsync(userId.Value, dto);
+            return Ok(reviewed);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpPost("admin/follow-up")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AddFollowUp([FromBody] CreateFollowUpNoteDto dto)

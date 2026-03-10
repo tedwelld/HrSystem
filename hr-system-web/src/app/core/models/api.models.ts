@@ -19,8 +19,6 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phoneNumber: string;
-  role: string;
-  adminInviteCode?: string;
 }
 
 export interface JobPosting {
@@ -43,6 +41,8 @@ export interface JobPosting {
 export interface CvProfile {
   id: number;
   originalFileName: string;
+  mimeType: string;
+  contentText: string;
   skills: string[];
   educationSummary: string;
   yearsOfExperience: number;
@@ -58,11 +58,28 @@ export interface JobApplication {
   candidateName: string;
   candidateEmail: string;
   cvProfileId?: number;
+  cvOriginalFileName: string;
+  cvMimeType: string;
+  cvContentText: string;
+  cvSkills: string[];
+  cvEducationSummary: string;
+  cvYearsOfExperience: number;
+  cvCertificationsSummary: string;
   stage: string;
   coverLetter: string;
   strengthsSummary: string;
   weaknessesSummary: string;
   matchScore: number;
+  skillMatchScore: number;
+  experienceScore: number;
+  educationScore: number;
+  certificationsScore: number;
+  overallScore: number;
+  testScore?: number;
+  adminReply: string;
+  reviewedByAdminId?: number;
+  reviewedByAdminName: string;
+  reviewedAtUtc?: string;
   submittedAtUtc: string;
   followUpNotes: FollowUpNote[];
 }
@@ -116,6 +133,24 @@ export interface AdminUser {
 
 export interface AdminCompany {
   id: number;
+  name: string;
+  address: string;
+  city: string;
+  country: string;
+  phone: string;
+  email: string;
+  description: string;
+}
+
+export interface CreateHrAdminRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  password: string;
+}
+
+export interface CreateAdminCompanyRequest {
   name: string;
   address: string;
   city: string;

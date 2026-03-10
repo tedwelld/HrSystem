@@ -44,16 +44,15 @@ public class CvController(ICvService cvService) : ControllerBase
             return BadRequest(new { message = "File is required." });
         }
 
-        using var stream = file.OpenReadStream();
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-        var content = await reader.ReadToEndAsync();
+        await using var stream = file.OpenReadStream();
+        await using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory);
 
-        if (string.IsNullOrWhiteSpace(content))
-        {
-            return BadRequest(new { message = "Uploaded CV content is empty." });
-        }
-
-        var result = await _cvService.UploadTextCvAsync(userId.Value, file.FileName, file.ContentType ?? "text/plain", content);
+        var result = await _cvService.UploadFileCvAsync(
+            userId.Value,
+            file.FileName,
+            file.ContentType ?? "application/octet-stream",
+            memory.ToArray());
         return Ok(result);
     }
 

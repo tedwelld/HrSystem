@@ -1,0 +1,65 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: hrsystem-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${HRSYSTEM_SQL_PASSWORD:-HrSystemSql!2026}
+    ports:
+      - "${HRSYSTEM_SQL_PORT:-14333}:1433"
+    volumes:
+      - hrsystem_sql_data:/var/opt/mssql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\" || exit 1"
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 30s
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: HrSystem.Api/Dockerfile
+    container_name: hrsystem-api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Docker
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Server=sqlserver,1433;Database=${HRSYSTEM_DB_NAME:-HrSystemDb};User Id=sa;Password=${HRSYSTEM_SQL_PASSWORD:-HrSystemSql!2026};TrustServerCertificate=true;Encrypt=false;MultipleActiveResultSets=true;
+      Jwt__Issuer: HrSystem.Api
+      Jwt__Audience: HrSystem.Web
+      Jwt__SecretKey: ${HRSYSTEM_JWT_SECRET:-HrSystemDockerSecret_ChangeThis_2026_ABC123!}
+      Jwt__AccessTokenMinutes: 240
+      Jwt__AdminInviteCode: ${HRSYSTEM_ADMIN_INVITE_CODE:-HRADMIN2026}
+      Smtp__Enabled: ${HRSYSTEM_SMTP_ENABLED:-false}
+      Sms__Enabled: ${HRSYSTEM_SMS_ENABLED:-false}
+      Storage__CvFolder: Storage/Cvs
+    ports:
+      - "${HRSYSTEM_API_PORT:-55330}:8080"
+    volumes:
+      - hrsystem_cv_data:/app/Storage/Cvs
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./hr-system-web
+      dockerfile: Dockerfile
+    container_name: hrsystem-web
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "${HRSYSTEM_WEB_PORT:-4200}:80"
+    restart: unless-stopped
+
+volumes:
+  hrsystem_sql_data:
+  hrsystem_cv_data:

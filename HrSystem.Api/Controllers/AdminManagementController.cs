@@ -18,6 +18,26 @@ public class AdminManagementController(IAdminManagementService adminManagementSe
     public async Task<IActionResult> Users()
         => Ok(await _adminManagementService.GetUsersAsync());
 
+    [HttpPost("users/hr-admin")]
+    public async Task<IActionResult> CreateHrAdmin([FromBody] CreateAdminUserDto dto)
+    {
+        try
+        {
+            var adminId = User.GetUserId();
+            if (!adminId.HasValue) return Unauthorized();
+
+            return Ok(await _adminManagementService.CreateHrAdminAsync(adminId.Value, dto));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpPut("users/{id:int}")]
     public async Task<IActionResult> UpdateUser(int id, [FromBody] AdminUpdateUserDto dto)
     {
@@ -35,9 +55,50 @@ public class AdminManagementController(IAdminManagementService adminManagementSe
         }
     }
 
+    [HttpDelete("users/{id:int}")]
+    public async Task<IActionResult> DeleteUser(int id)
+    {
+        try
+        {
+            var adminId = User.GetUserId();
+            if (!adminId.HasValue) return Unauthorized();
+
+            var deleted = await _adminManagementService.DeleteUserAsync(adminId.Value, id);
+            return deleted ? NoContent() : NotFound();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
     [HttpGet("companies")]
     public async Task<IActionResult> Companies()
         => Ok(await _adminManagementService.GetCompaniesAsync());
+
+    [HttpPost("companies")]
+    public async Task<IActionResult> CreateCompany([FromBody] HrSystem.Core.Dtos.Admin.CreateCompanyDto dto)
+    {
+        try
+        {
+            var adminId = User.GetUserId();
+            if (!adminId.HasValue) return Unauthorized();
+
+            return Ok(await _adminManagementService.CreateCompanyAsync(adminId.Value, dto));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 
     [HttpPut("companies/{id:int}")]
     public async Task<IActionResult> UpdateCompany(int id, [FromBody] AdminUpdateCompanyDto dto)
@@ -53,6 +114,27 @@ public class AdminManagementController(IAdminManagementService adminManagementSe
         catch (UnauthorizedAccessException ex)
         {
             return Unauthorized(new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("companies/{id:int}")]
+    public async Task<IActionResult> DeleteCompany(int id)
+    {
+        try
+        {
+            var adminId = User.GetUserId();
+            if (!adminId.HasValue) return Unauthorized();
+
+            var deleted = await _adminManagementService.DeleteCompanyAsync(adminId.Value, id);
+            return deleted ? NoContent() : NotFound();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
     }
 

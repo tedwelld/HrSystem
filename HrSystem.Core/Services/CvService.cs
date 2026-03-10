@@ -1,4 +1,7 @@
 using System.Text;
+using System.Text.Json;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
 using HrSystem.Core.Dtos.Cv;
 using HrSystem.Core.Interfaces;
 using HrSystem.Core.Options;
@@ -17,32 +20,37 @@ public class CvService(
     private readonly HrSystemDbContext _dbContext = dbContext;
     private readonly StorageOptions _storageOptions = storageOptions.Value;
     private readonly ISnapshotService _snapshotService = snapshotService;
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
 
     private static readonly string[] KnownSkills =
     [
         "c#", "dotnet", "asp.net", "sql", "entity framework", "angular", "react",
         "javascript", "typescript", "azure", "aws", "docker", "kubernetes", "python",
-        "java", "node", "html", "css", "git", "rest api", "microservices"
+        "java", "node", "html", "css", "git", "rest api", "microservices",
+        "recruitment", "communication", "hris", "onboarding"
     ];
 
     public async Task<CvProfileDto> UploadStructuredCvAsync(int userId, StructuredCvUploadDto dto)
     {
-        var content = dto.FullText.Trim();
-        var skills = NormalizeSkills(dto.Skills.Any() ? dto.Skills : ExtractSkills(content));
+        var normalized = NormalizeStructuredUpload(dto);
+        var content = normalized.FullText.Trim();
+        var skills = NormalizeSkills(normalized.Skills.Any() ? normalized.Skills : ExtractSkills(content));
 
-        var storedPath = await WriteCvFileAsync(dto.FileName, "application/json", content);
+        var storedPath = await WriteCvFileAsync(
+            normalized.FileName,
+            Encoding.UTF8.GetBytes(JsonSerializer.Serialize(normalized, JsonOptions)));
 
         var entity = new CvProfile
         {
             CandidateId = userId,
-            OriginalFileName = dto.FileName,
+            OriginalFileName = normalized.FileName,
             StoredFilePath = storedPath,
             MimeType = "application/json",
             ContentText = content,
             SkillsCsv = string.Join(',', skills),
-            EducationSummary = dto.EducationSummary.Trim(),
-            YearsOfExperience = dto.YearsOfExperience,
-            CertificationsSummary = dto.CertificationsSummary.Trim(),
+            EducationSummary = normalized.EducationSummary.Trim(),
+            YearsOfExperience = normalized.YearsOfExperience,
+            CertificationsSummary = normalized.CertificationsSummary.Trim(),
             CreatedAtUtc = DateTime.UtcNow
         };
 
@@ -64,9 +72,14 @@ public class CvService(
     public async Task<CvProfileDto> UploadTextCvAsync(int userId, string fileName, string contentType, string rawText)
     {
         var text = rawText.Trim();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            throw new InvalidOperationException("Uploaded CV content is empty.");
+        }
+
         var skills = NormalizeSkills(ExtractSkills(text));
 
-        var storedPath = await WriteCvFileAsync(fileName, contentType, text);
+        var storedPath = await WriteCvFileAsync(fileName, Encoding.UTF8.GetBytes(text));
 
         var entity = new CvProfile
         {
@@ -97,6 +110,27 @@ public class CvService(
         return MapCv(entity);
     }
 
+    public async Task<CvProfileDto> UploadFileCvAsync(int userId, string fileName, string contentType, byte[] fileBytes)
+    {
+        if (fileBytes.Length == 0)
+        {
+            throw new InvalidOperationException("Uploaded CV file is empty.");
+        }
+
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        return extension switch
+        {
+            ".json" => await UploadStructuredJsonCvAsync(userId, fileName, fileBytes),
+            ".txt" => await UploadTextCvAsync(userId, fileName, "text/plain", DecodeUtf8(fileBytes)),
+            ".docx" => await UploadTextCvAsync(
+                userId,
+                fileName,
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ExtractDocxText(fileBytes)),
+            _ => throw new InvalidOperationException("Only .json, .txt, and .docx CV files are supported.")
+        };
+    }
+
     public async Task<List<CvProfileDto>> GetMyCvProfilesAsync(int userId)
     {
         return await _dbContext.CvProfiles
@@ -107,6 +141,8 @@ public class CvService(
             {
                 Id = x.Id,
                 OriginalFileName = x.OriginalFileName,
+                MimeType = x.MimeType,
+                ContentText = x.ContentText,
                 Skills = x.SkillsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList(),
                 EducationSummary = x.EducationSummary,
                 YearsOfExperience = x.YearsOfExperience,
@@ -157,7 +193,7 @@ public class CvService(
         return (strengths, weaknesses, score);
     }
 
-    private async Task<string> WriteCvFileAsync(string fileName, string contentType, string content)
+    private async Task<string> WriteCvFileAsync(string fileName, byte[] fileBytes)
     {
         var folder = _storageOptions.CvFolder;
         var absoluteFolder = Path.IsPathRooted(folder)
@@ -169,12 +205,12 @@ public class CvService(
         var extension = Path.GetExtension(fileName);
         if (string.IsNullOrWhiteSpace(extension))
         {
-            extension = contentType.Contains("json", StringComparison.OrdinalIgnoreCase) ? ".json" : ".txt";
+            extension = ".txt";
         }
 
         var safeFileName = $"{Guid.NewGuid():N}{extension}";
         var absolutePath = Path.Combine(absoluteFolder, safeFileName);
-        await File.WriteAllTextAsync(absolutePath, content, Encoding.UTF8);
+        await File.WriteAllBytesAsync(absolutePath, fileBytes);
 
         return absolutePath;
     }
@@ -185,6 +221,8 @@ public class CvService(
         {
             Id = entity.Id,
             OriginalFileName = entity.OriginalFileName,
+            MimeType = entity.MimeType,
+            ContentText = entity.ContentText,
             Skills = entity.SkillsCsv.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList(),
             EducationSummary = entity.EducationSummary,
             YearsOfExperience = entity.YearsOfExperience,
@@ -233,5 +271,93 @@ public class CvService(
         if (lower.Contains("pmp")) matches.Add("PMP");
 
         return string.Join(", ", matches);
+    }
+
+    private async Task<CvProfileDto> UploadStructuredJsonCvAsync(int userId, string fileName, byte[] fileBytes)
+    {
+        var json = DecodeUtf8(fileBytes);
+        StructuredCvUploadDto? dto;
+
+        try
+        {
+            dto = JsonSerializer.Deserialize<StructuredCvUploadDto>(json, JsonOptions);
+        }
+        catch (JsonException)
+        {
+            throw new InvalidOperationException("CV JSON does not match the required template.");
+        }
+
+        if (dto is null)
+        {
+            throw new InvalidOperationException("CV JSON does not match the required template.");
+        }
+
+        dto.FileName = string.IsNullOrWhiteSpace(dto.FileName) ? fileName : dto.FileName;
+        return await UploadStructuredCvAsync(userId, dto);
+    }
+
+    private static StructuredCvUploadDto NormalizeStructuredUpload(StructuredCvUploadDto dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.FullText))
+        {
+            throw new InvalidOperationException("Full CV text is required.");
+        }
+
+        if (dto.YearsOfExperience < 0)
+        {
+            throw new InvalidOperationException("Years of experience cannot be negative.");
+        }
+
+        var fileName = string.IsNullOrWhiteSpace(dto.FileName) ? "required-cv-template.json" : dto.FileName.Trim();
+        if (!fileName.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+        {
+            fileName = $"{Path.GetFileNameWithoutExtension(fileName)}.json";
+        }
+
+        return new StructuredCvUploadDto
+        {
+            FileName = fileName,
+            FullText = dto.FullText.Trim(),
+            Skills = dto.Skills,
+            EducationSummary = dto.EducationSummary ?? string.Empty,
+            YearsOfExperience = dto.YearsOfExperience,
+            CertificationsSummary = dto.CertificationsSummary ?? string.Empty
+        };
+    }
+
+    private static string DecodeUtf8(byte[] fileBytes)
+    {
+        var text = Encoding.UTF8.GetString(fileBytes).Trim();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            throw new InvalidOperationException("Uploaded CV content is empty.");
+        }
+
+        return text;
+    }
+
+    private static string ExtractDocxText(byte[] fileBytes)
+    {
+        using var stream = new MemoryStream(fileBytes);
+        using var document = WordprocessingDocument.Open(stream, false);
+        var mainPart = document.MainDocumentPart;
+        if (mainPart?.Document?.Body is null)
+        {
+            throw new InvalidOperationException("The uploaded .docx CV could not be read.");
+        }
+
+        var texts = mainPart.Document.Body
+            .Descendants<Text>()
+            .Select(text => text.Text.Trim())
+            .Where(text => !string.IsNullOrWhiteSpace(text))
+            .ToList();
+
+        var content = string.Join(' ', texts);
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            throw new InvalidOperationException("The uploaded .docx CV could not be read.");
+        }
+
+        return content;
     }
 }

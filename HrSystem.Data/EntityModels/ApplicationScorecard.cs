@@ -21,5 +21,15 @@ public class ApplicationScorecard
     [MaxLength(3000)]
     public string GapsBreakdown { get; set; } = string.Empty;
 
+    public decimal? TestScore { get; set; }
+
+    [MaxLength(2000)]
+    public string ReviewReply { get; set; } = string.Empty;
+
+    public int? ReviewedByAdminId { get; set; }
+    public User? ReviewedByAdmin { get; set; }
+
+    public DateTime? ReviewedAtUtc { get; set; }
+
     public DateTime GeneratedAtUtc { get; set; } = DateTime.UtcNow;
 }

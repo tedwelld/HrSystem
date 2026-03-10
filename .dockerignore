@@ -1,0 +1,10 @@
+.git
+.github
+.vs
+**/bin
+**/obj
+**/node_modules
+**/dist
+**/.angular
+HrSystem.slnLaunch.user
+hr-system-web

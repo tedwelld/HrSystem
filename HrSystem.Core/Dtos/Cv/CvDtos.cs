@@ -25,6 +25,8 @@ public class CvProfileDto
 {
     public int Id { get; set; }
     public string OriginalFileName { get; set; } = string.Empty;
+    public string MimeType { get; set; } = string.Empty;
+    public string ContentText { get; set; } = string.Empty;
     public List<string> Skills { get; set; } = [];
     public string EducationSummary { get; set; } = string.Empty;
     public int YearsOfExperience { get; set; }

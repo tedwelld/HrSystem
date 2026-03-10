@@ -20,6 +20,8 @@ export class ApplicationsComponent implements OnInit {
 
   applications: JobApplication[] = [];
   stageDraft: Record<number, string> = {};
+  testScoreDraft: Record<number, number | null> = {};
+  replyDraft: Record<number, string> = {};
   noteDraft: Record<number, string> = {};
 
   error = '';
@@ -47,9 +49,13 @@ export class ApplicationsComponent implements OnInit {
       next: (data) => {
         this.applications = data;
         this.stageDraft = {};
+        this.testScoreDraft = {};
+        this.replyDraft = {};
         this.noteDraft = {};
         data.forEach((x) => {
           this.stageDraft[x.id] = x.stage;
+          this.testScoreDraft[x.id] = x.testScore ?? null;
+          this.replyDraft[x.id] = x.adminReply ?? '';
           this.noteDraft[x.id] = '';
         });
       },
@@ -76,6 +82,32 @@ export class ApplicationsComponent implements OnInit {
       });
   }
 
+  review(applicationId: number) {
+    const reply = this.replyDraft[applicationId]?.trim();
+    if (!reply) {
+      this.error = 'A review reply is required.';
+      return;
+    }
+
+    const testScore = this.testScoreDraft[applicationId];
+    this.api
+      .reviewApplication({
+        applicationId,
+        stage: this.stageDraft[applicationId],
+        testScore: testScore === null ? undefined : testScore,
+        reply
+      })
+      .subscribe({
+        next: () => {
+          this.success = 'Application reviewed and candidate notified.';
+          this.load();
+        },
+        error: (err) => {
+          this.error = err?.error?.message ?? 'Application review failed.';
+        }
+      });
+  }
+
   addFollowUp(applicationId: number) {
     const note = this.noteDraft[applicationId]?.trim();
     if (!note) {
@@ -93,5 +125,9 @@ export class ApplicationsComponent implements OnInit {
         this.error = err?.error?.message ?? 'Failed to add note.';
       }
     });
+  }
+
+  trackApplication(_: number, application: JobApplication) {
+    return application.id;
   }
 }

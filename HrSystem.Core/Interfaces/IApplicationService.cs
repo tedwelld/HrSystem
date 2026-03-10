@@ -9,5 +9,6 @@ public interface IApplicationService
     Task<List<JobApplicationDto>> GetAllApplicationsAsync();
     Task<List<JobApplicationDto>> GetApplicationsForJobAsync(int jobId);
     Task<bool> UpdateStageAsync(int adminId, UpdateApplicationStageDto dto);
+    Task<JobApplicationDto> ReviewApplicationAsync(int adminId, ReviewApplicationDto dto);
     Task<FollowUpNoteDto> AddFollowUpNoteAsync(int adminId, CreateFollowUpNoteDto dto);
 }

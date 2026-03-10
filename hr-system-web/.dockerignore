@@ -1,0 +1,6 @@
+.angular
+dist
+node_modules
+coverage
+npm-debug.log
+README.md

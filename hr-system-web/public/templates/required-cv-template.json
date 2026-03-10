@@ -1,0 +1,15 @@
+{
+  "fileName": "required-cv-template.json",
+  "fullText": "Jane Candidate\nEmail: jane@example.com\nPhone: +263700000000\nProfessional Summary: Mid-level software engineer with Angular and .NET experience.\nWork Experience:\n- Software Engineer at Example Corp (2022-2026)\n- Junior Developer at Starter Labs (2020-2022)\nProjects:\n- Recruitment dashboard with Angular and .NET\n- SQL reporting and workflow automation",
+  "skills": [
+    "angular",
+    "typescript",
+    "c#",
+    "dotnet",
+    "sql",
+    "git"
+  ],
+  "educationSummary": "BSc Computer Science, University of Zimbabwe",
+  "yearsOfExperience": 4,
+  "certificationsSummary": "Azure Fundamentals, Scrum"
+}

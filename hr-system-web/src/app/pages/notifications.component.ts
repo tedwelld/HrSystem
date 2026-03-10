@@ -32,4 +32,8 @@ export class NotificationsComponent implements OnInit {
   markAllRead() {
     this.api.markAllNotificationsAsRead().subscribe(() => this.load());
   }
+
+  trackNotification(_: number, item: AppNotification) {
+    return item.id;
+  }
 }
