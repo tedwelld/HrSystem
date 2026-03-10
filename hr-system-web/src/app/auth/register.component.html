@@ -53,7 +53,7 @@
 
         <div class="panel-head">
           <h2>Create Account</h2>
-          <p>Self-registration creates a candidate account.</p>
+          <p>Choose a role and complete registration. Admin signup requires the invite code.</p>
         </div>
 
         <div class="field-grid">
@@ -81,6 +81,19 @@
             Password
             <input type="password" [(ngModel)]="password" name="password" required minlength="8" />
           </label>
+
+          <label>
+            Role
+            <select [(ngModel)]="role" name="role">
+              <option value="Candidate">Candidate</option>
+              <option value="Admin">Admin</option>
+            </select>
+          </label>
+
+          <label *ngIf="role === 'Admin'">
+            Admin Invite Code
+            <input [(ngModel)]="adminInviteCode" name="adminInviteCode" />
+          </label>
         </div>
 
         <button type="submit" class="btn btn-blue auth-submit" [disabled]="loading">
@@ -91,7 +104,7 @@
 
         <div class="panel-footer">
           <a routerLink="/login">Sign in</a>
-          <span>HR admins are created by existing admins only</span>
+          <span>Use the admin invite code only when elevated access is intended.</span>
         </div>
       </form>
     </section>

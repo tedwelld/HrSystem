@@ -25,23 +25,36 @@
   --button-yellow-text: #4a3400;
   --button-red: #dc2626;
   --button-red-hover: #b91c1c;
+  --control-bg: #fbfcfd;
   --control-height: 46px;
   --control-radius: 12px;
 }
 
 body[data-theme='dark'] {
   --app-bg:
-    radial-gradient(circle at top left, rgba(203, 213, 225, 0.34), transparent 24%),
-    linear-gradient(180deg, #f2f4f6 0%, #ebeff3 100%);
-  --glass-bg: #f7f8fa;
-  --glass-line: #cfd7df;
-  --surface-muted: #eef2f5;
-  --surface-accent: #e8eef8;
-  --text-color: #1c2733;
-  --muted-color: #667383;
-  --accent-bg: #2563eb;
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 30%),
+    linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  --glass-bg: rgba(15, 23, 42, 0.88);
+  --glass-line: rgba(148, 163, 184, 0.22);
+  --surface-muted: rgba(30, 41, 59, 0.92);
+  --surface-accent: rgba(30, 64, 175, 0.28);
+  --text-color: #e5eefb;
+  --muted-color: #94a3b8;
+  --accent-bg: #60a5fa;
   --accent-text: #ffffff;
-  --link-color: #1d4ed8;
+  --link-color: #93c5fd;
+  --button-blue: #3b82f6;
+  --button-blue-hover: #2563eb;
+  --button-green: #22c55e;
+  --button-green-hover: #16a34a;
+  --button-yellow: #facc15;
+  --button-yellow-hover: #eab308;
+  --button-yellow-text: #312200;
+  --button-red: #ef4444;
+  --button-red-hover: #dc2626;
+  --shadow-soft: 0 18px 44px rgba(2, 6, 23, 0.45);
+  --shadow-card: 0 12px 30px rgba(2, 6, 23, 0.3);
+  --control-bg: rgba(15, 23, 42, 0.95);
 }
 
 * {
@@ -58,6 +71,7 @@ body {
   min-height: 100dvh;
   overflow-x: hidden;
   text-rendering: optimizeLegibility;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 h1,
@@ -95,7 +109,7 @@ button:disabled,
 input,
 select,
 textarea {
-  background: #fbfcfd;
+  background: var(--control-bg);
   color: var(--text-color);
   border: 1px solid var(--glass-line);
   border-radius: var(--control-radius);

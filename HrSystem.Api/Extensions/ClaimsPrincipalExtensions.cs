@@ -9,4 +9,7 @@ public static class ClaimsPrincipalExtensions
         var raw = principal.FindFirstValue(ClaimTypes.NameIdentifier);
         return int.TryParse(raw, out var userId) ? userId : null;
     }
+
+    public static string? GetSessionToken(this ClaimsPrincipal principal)
+        => principal.FindFirstValue(ClaimTypes.Sid);
 }

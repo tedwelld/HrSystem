@@ -7,5 +7,5 @@ public enum ApplicationStage
     Shortlisted = 3,
     InterviewScheduled = 4,
     Rejected = 5,
-    Hired = 6
+    Offered = 6
 }

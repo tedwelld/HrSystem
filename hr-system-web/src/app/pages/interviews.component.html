@@ -1,0 +1,102 @@
+<section class="page">
+  <h2>Interviews</h2>
+
+  <p class="status success" *ngIf="success">{{ success }}</p>
+  <p class="status error" *ngIf="error">{{ error }}</p>
+
+  <section class="panel" *ngIf="role() === 'Admin'">
+    <div class="toolbar">
+      <div>
+        <h3>Schedule Interview</h3>
+        <p>Pick an application, set the meeting details, and notify the candidate.</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <label>
+        Application
+        <select [(ngModel)]="scheduleDraft.applicationId">
+          <option [ngValue]="0">Select application</option>
+          <option *ngFor="let app of scheduleCandidates; trackBy: trackApplication" [ngValue]="app.id">
+            {{ app.candidateName || app.candidateEmail }} | {{ app.jobTitle }} | {{ app.stage }}
+          </option>
+        </select>
+      </label>
+
+      <label>
+        Interview Type
+        <select [(ngModel)]="scheduleDraft.interviewType">
+          <option *ngFor="let option of interviewTypes" [value]="option">{{ option }}</option>
+        </select>
+      </label>
+
+      <label>
+        Start
+        <input type="datetime-local" [(ngModel)]="scheduleDraft.scheduledStartLocal" />
+      </label>
+
+      <label>
+        End
+        <input type="datetime-local" [(ngModel)]="scheduleDraft.scheduledEndLocal" />
+      </label>
+
+      <label>
+        Time Zone
+        <input [(ngModel)]="scheduleDraft.timeZone" />
+      </label>
+
+      <label>
+        Meeting Link / Location
+        <input [(ngModel)]="scheduleDraft.meetingLinkOrLocation" placeholder="Teams link or office boardroom" />
+      </label>
+
+      <label class="wide">
+        Notes
+        <textarea [(ngModel)]="scheduleDraft.notes" placeholder="Interview agenda, preparation notes, or access instructions."></textarea>
+      </label>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-blue" (click)="scheduleInterview()">Schedule Interview</button>
+    </div>
+  </section>
+
+  <section class="stack" *ngIf="!loading; else loadingTpl">
+    <article class="panel interview-card" *ngFor="let interview of interviews; trackBy: trackInterview">
+      <div class="card-head">
+        <div>
+          <h3>{{ interview.candidateName }}</h3>
+          <p>{{ interview.interviewType }} interview</p>
+        </div>
+        <span class="badge">{{ interview.status }}</span>
+      </div>
+
+      <div class="info-grid">
+        <p><strong>Starts:</strong> {{ interview.scheduledStartUtc | date:'medium' }}</p>
+        <p><strong>Ends:</strong> {{ interview.scheduledEndUtc | date:'medium' }}</p>
+        <p><strong>Time Zone:</strong> {{ interview.timeZone }}</p>
+        <p><strong>Coordinator:</strong> {{ interview.adminName }}</p>
+        <p class="wide"><strong>Location:</strong> {{ interview.meetingLinkOrLocation || 'TBD' }}</p>
+        <p class="wide"><strong>Notes:</strong> {{ interview.notes || 'No notes captured.' }}</p>
+      </div>
+
+      <div class="admin-tools" *ngIf="role() === 'Admin'">
+        <select [(ngModel)]="statusDraft[interview.id]">
+          <option *ngFor="let option of statusOptions" [value]="option">{{ option }}</option>
+        </select>
+        <input [(ngModel)]="noteDraft[interview.id]" placeholder="Update notes" />
+        <button type="button" class="btn btn-green" (click)="updateStatus(interview.id)">Save Update</button>
+      </div>
+    </article>
+
+    <section class="panel empty-state" *ngIf="interviews.length === 0">
+      <h3>No interviews yet</h3>
+      <p *ngIf="role() === 'Admin'">Schedule the first candidate interview from this page.</p>
+      <p *ngIf="role() === 'Candidate'">Interview updates will appear here once an admin schedules them.</p>
+    </section>
+  </section>
+
+  <ng-template #loadingTpl>
+    <p>Loading interviews...</p>
+  </ng-template>
+</section>

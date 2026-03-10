@@ -37,7 +37,10 @@
     <div class="grid">
       <label>
         Theme
-        <input [ngModel]="'White'" disabled />
+        <select [(ngModel)]="preferences.theme">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
       </label>
       <label class="checkbox-row">
         <input type="checkbox" [(ngModel)]="preferences.autoHideSidebar" />

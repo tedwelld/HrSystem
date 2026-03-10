@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../core/services/auth.service';
 import { PdfExportService } from '../core/services/pdf-export.service';
 import { HrApiService } from '../core/services/hr-api.service';
+import { UiPreferenceService } from '../core/services/ui-preference.service';
 import {
   AdminCompany,
   AdminUser,
@@ -24,6 +25,7 @@ export class SettingsComponent implements OnInit {
   private readonly api = inject(HrApiService);
   private readonly auth = inject(AuthService);
   private readonly pdfExport = inject(PdfExportService);
+  private readonly preferenceService = inject(UiPreferenceService);
 
   readonly isAdmin = computed(() => this.auth.isAdmin());
 
@@ -86,7 +88,8 @@ export class SettingsComponent implements OnInit {
     });
 
     this.api.getMyPreference().subscribe((pref) => {
-      this.preferences = { ...pref, theme: 'light' };
+      this.preferences = pref;
+      this.preferenceService.applyPreference(pref);
     });
 
     if (this.isAdmin()) {
@@ -140,13 +143,13 @@ export class SettingsComponent implements OnInit {
   savePreferences() {
     this.api
       .updateMyPreference({
-        theme: 'light',
+        theme: this.preferences.theme,
         autoHideSidebar: this.preferences.autoHideSidebar
       })
       .subscribe({
         next: (updated) => {
-          this.preferences = { ...updated, theme: 'light' };
-          document.body.setAttribute('data-theme', 'light');
+          this.preferences = updated;
+          this.preferenceService.applyPreference(updated);
           this.success = 'Preferences saved.';
         },
         error: (err) => {

@@ -13,7 +13,7 @@ public class TokenService(IOptions<JwtOptions> jwtOptions) : ITokenService
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-    public (string Token, DateTime ExpiresAtUtc) CreateToken(User user)
+    public (string Token, DateTime ExpiresAtUtc) CreateToken(User user, string sessionToken)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -25,7 +25,8 @@ public class TokenService(IOptions<JwtOptions> jwtOptions) : ITokenService
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
-            new(ClaimTypes.Role, user.Role.ToString())
+            new(ClaimTypes.Role, user.Role.ToString()),
+            new(ClaimTypes.Sid, sessionToken)
         };
 
         var token = new JwtSecurityToken(

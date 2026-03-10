@@ -20,17 +20,34 @@
     <div class="header-tools">
       <div class="clock">{{ now() | date:'shortTime' }}</div>
 
+      <button class="icon-btn btn-blue" type="button" (click)="toggleTheme()" [attr.aria-label]="'Toggle ' + currentTheme() + ' theme'">
+        <i [class]="themeIcon()"></i>
+      </button>
+
       <button class="icon-btn btn-blue bell" type="button" (click)="toggleNotificationPanel()" aria-label="Notifications">
         <i class="fa-solid fa-bell"></i>
         <span class="badge" *ngIf="unreadCount() > 0">{{ unreadCount() }}</span>
       </button>
 
       <div class="user-zone" *ngIf="user() as currentUser">
-        <div>
-          <strong>{{ currentUser.firstName }} {{ currentUser.lastName }}</strong>
-          <span>{{ currentUser.role }}</span>
+        <button type="button" class="profile-trigger" (click)="toggleProfileMenu()">
+          <div>
+            <strong>{{ currentUser.firstName }} {{ currentUser.lastName }}</strong>
+            <span>{{ currentUser.role }}</span>
+          </div>
+          <i class="fa-solid fa-chevron-down"></i>
+        </button>
+
+        <div class="profile-menu" *ngIf="showProfileMenu()">
+          <button type="button" (click)="navigate('/app/settings')">
+            <i class="fa-solid fa-user-gear"></i>
+            <span>Profile & Settings</span>
+          </button>
+          <button type="button" (click)="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span>Logout</span>
+          </button>
         </div>
-        <button type="button" class="btn btn-red" (click)="logout()">Logout</button>
       </div>
     </div>
   </header>

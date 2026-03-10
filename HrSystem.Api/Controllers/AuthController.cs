@@ -19,7 +19,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         try
         {
-            var response = await _authService.RegisterAsync(dto);
+            var response = await _authService.RegisterAsync(dto, GetIpAddress(), GetUserAgent());
             return Ok(response);
         }
         catch (UnauthorizedAccessException ex)
@@ -38,13 +38,29 @@ public class AuthController(IAuthService authService) : ControllerBase
     {
         try
         {
-            var response = await _authService.LoginAsync(dto);
+            var response = await _authService.LoginAsync(dto, GetIpAddress(), GetUserAgent());
             return Ok(response);
         }
         catch (UnauthorizedAccessException ex)
         {
             return Unauthorized(new { message = ex.Message });
         }
+    }
+
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        var userId = User.GetUserId();
+        var sessionToken = User.GetSessionToken();
+
+        if (!userId.HasValue || string.IsNullOrWhiteSpace(sessionToken))
+        {
+            return Unauthorized();
+        }
+
+        await _authService.LogoutAsync(userId.Value, sessionToken);
+        return NoContent();
     }
 
     [HttpGet("me")]
@@ -74,4 +90,10 @@ public class AuthController(IAuthService authService) : ControllerBase
         var profile = await _authService.UpdateMyProfileAsync(userId.Value, dto);
         return profile is null ? NotFound() : Ok(profile);
     }
+
+    private string GetIpAddress()
+        => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+    private string GetUserAgent()
+        => Request.Headers.UserAgent.ToString();
 }

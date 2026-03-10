@@ -4,8 +4,10 @@ using HrSystem.Core.Options;
 using HrSystem.Core.Services;
 using HrSystem.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +38,35 @@ builder.Services
             ValidAudience = jwtOptions.Audience,
             IssuerSigningKey = jwtKey,
             ClockSkew = TimeSpan.FromMinutes(1)
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var userIdRaw = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                var sessionToken = context.Principal?.FindFirstValue(ClaimTypes.Sid);
+
+                if (!int.TryParse(userIdRaw, out var userId) || string.IsNullOrWhiteSpace(sessionToken))
+                {
+                    context.Fail("The authenticated session is invalid.");
+                    return;
+                }
+
+                var dbContext = context.HttpContext.RequestServices.GetRequiredService<HrSystemDbContext>();
+                var sessionHash = SessionTokenHasher.Hash(sessionToken);
+
+                var validSession = await dbContext.UserSessions.AnyAsync(x =>
+                    x.UserId == userId &&
+                    x.RefreshTokenHash == sessionHash &&
+                    x.RevokedAtUtc == null &&
+                    x.ExpiresAtUtc > DateTime.UtcNow);
+
+                if (!validSession)
+                {
+                    context.Fail("The authenticated session is no longer active.");
+                }
+            }
         };
     });
 

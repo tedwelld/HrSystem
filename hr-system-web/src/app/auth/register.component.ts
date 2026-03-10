@@ -20,6 +20,8 @@ export class RegisterComponent {
   email = '';
   phoneNumber = '';
   password = '';
+  role: 'Admin' | 'Candidate' = 'Candidate';
+  adminInviteCode = '';
 
   error = '';
   loading = false;
@@ -34,7 +36,9 @@ export class RegisterComponent {
         lastName: this.lastName,
         email: this.email,
         phoneNumber: this.phoneNumber,
-        password: this.password
+        password: this.password,
+        role: this.role,
+        adminInviteCode: this.role === 'Admin' ? this.adminInviteCode : undefined
       })
       .subscribe({
         next: () => {

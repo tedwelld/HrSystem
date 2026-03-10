@@ -19,6 +19,8 @@ export interface RegisterRequest {
   email: string;
   password: string;
   phoneNumber: string;
+  role: 'Admin' | 'Candidate';
+  adminInviteCode?: string;
 }
 
 export interface JobPosting {
@@ -82,6 +84,22 @@ export interface JobApplication {
   reviewedAtUtc?: string;
   submittedAtUtc: string;
   followUpNotes: FollowUpNote[];
+}
+
+export interface InterviewSchedule {
+  id: number;
+  jobApplicationId: number;
+  candidateId: number;
+  candidateName: string;
+  adminId: number;
+  adminName: string;
+  interviewType: string;
+  status: string;
+  scheduledStartUtc: string;
+  scheduledEndUtc: string;
+  timeZone: string;
+  meetingLinkOrLocation: string;
+  notes: string;
 }
 
 export interface FollowUpNote {

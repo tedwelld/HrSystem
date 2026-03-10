@@ -35,11 +35,10 @@ export class AuthService {
   }
 
   logout() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    this.userSignal.set(null);
-    this.tokenSignal.set('');
-    this.router.navigate(['/login']);
+    this.http.post(`${environment.apiBaseUrl}/auth/logout`, {}).subscribe({
+      next: () => this.clearSession(),
+      error: () => this.clearSession()
+    });
   }
 
   updateCachedUser(user: UserProfile) {
@@ -52,6 +51,14 @@ export class AuthService {
     localStorage.setItem(USER_KEY, JSON.stringify(response.user));
     this.tokenSignal.set(response.token);
     this.userSignal.set(response.user);
+  }
+
+  private clearSession() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    this.userSignal.set(null);
+    this.tokenSignal.set('');
+    this.router.navigate(['/login']);
   }
 
   private loadUser(): UserProfile | null {

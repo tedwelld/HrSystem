@@ -12,6 +12,7 @@ import { ApplicationsComponent } from './pages/applications.component';
 import { NotificationsComponent } from './pages/notifications.component';
 import { SnapshotsComponent } from './pages/snapshots.component';
 import { SettingsComponent } from './pages/settings.component';
+import { InterviewsComponent } from './pages/interviews.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -37,6 +38,7 @@ export const routes: Routes = [
       },
       { path: 'jobs', component: JobsComponent },
       { path: 'applications', component: ApplicationsComponent },
+      { path: 'interviews', component: InterviewsComponent },
       { path: 'notifications', component: NotificationsComponent },
       { path: 'snapshots', component: SnapshotsComponent },
       { path: 'settings', component: SettingsComponent }

@@ -33,7 +33,7 @@ export class ApplicationsComponent implements OnInit {
     'Shortlisted',
     'InterviewScheduled',
     'Rejected',
-    'Hired'
+    'Offered'
   ];
 
   ngOnInit(): void {

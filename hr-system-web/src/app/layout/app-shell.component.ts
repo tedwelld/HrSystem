@@ -6,6 +6,7 @@ import { filter } from 'rxjs/operators';
 import { AppNotification } from '../core/models/api.models';
 import { AuthService } from '../core/services/auth.service';
 import { HrApiService } from '../core/services/hr-api.service';
+import { UiPreferenceService } from '../core/services/ui-preference.service';
 
 type AppRole = 'Admin' | 'Candidate';
 
@@ -32,10 +33,17 @@ export class AppShellComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly api = inject(HrApiService);
   private readonly router = inject(Router);
+  private readonly preferenceService = inject(UiPreferenceService);
 
   readonly user = this.authService.user;
+  readonly preference = this.preferenceService.preference;
   readonly dashboardLink = computed(() =>
     this.authService.isAdmin() ? '/app/admin-dashboard' : '/app/candidate-dashboard'
+  );
+  readonly currentTheme = computed(() => this.preference().theme);
+  readonly autoHideSidebar = computed(() => this.preference().autoHideSidebar);
+  readonly themeIcon = computed(() =>
+    this.currentTheme() === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon'
   );
 
   readonly navGroups: NavGroup[] = [
@@ -47,7 +55,8 @@ export class AppShellComponent implements OnInit, OnDestroy {
       label: 'Recruitment',
       items: [
         { label: 'Jobs', path: '/app/jobs', icon: 'fa-solid fa-briefcase' },
-        { label: 'Applications', path: '/app/applications', icon: 'fa-solid fa-file-circle-check' }
+        { label: 'Applications', path: '/app/applications', icon: 'fa-solid fa-file-circle-check' },
+        { label: 'Interviews', path: '/app/interviews', icon: 'fa-solid fa-calendar-check' }
       ]
     },
     {
@@ -59,9 +68,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
     },
     {
       label: 'System',
-      items: [
-        { label: 'Settings', path: '/app/settings', icon: 'fa-solid fa-sliders' }
-      ]
+      items: [{ label: 'Settings', path: '/app/settings', icon: 'fa-solid fa-sliders' }]
     }
   ];
 
@@ -81,11 +88,11 @@ export class AppShellComponent implements OnInit, OnDestroy {
   readonly now = signal(new Date());
   readonly sidebarOpen = signal(false);
   readonly isMobile = signal(window.innerWidth < 1080);
-  readonly autoHideSidebar = signal(true);
   readonly sidebarHovered = signal(false);
   readonly notifications = signal<AppNotification[]>([]);
   readonly unreadCount = signal(0);
   readonly showNotificationPanel = signal(false);
+  readonly showProfileMenu = signal(false);
   readonly currentPath = signal('');
   readonly sidebarExpanded = computed(() => (this.isMobile() ? this.sidebarOpen() : this.sidebarHovered()));
 
@@ -95,7 +102,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.currentPath.set(this.router.url);
-    this.loadPreference();
+    this.preferenceService.load().subscribe();
     this.loadUnreadCount();
     this.onResize();
 
@@ -108,6 +115,7 @@ export class AppShellComponent implements OnInit, OnDestroy {
         this.sidebarOpen.set(false);
       }
       this.showNotificationPanel.set(false);
+      this.showProfileMenu.set(false);
     });
   }
 
@@ -148,6 +156,8 @@ export class AppShellComponent implements OnInit, OnDestroy {
     if (window.innerWidth < 1080 || this.autoHideSidebar()) {
       this.sidebarOpen.set(false);
     }
+
+    this.showProfileMenu.set(false);
   }
 
   navigate(path: string) {
@@ -170,16 +180,35 @@ export class AppShellComponent implements OnInit, OnDestroy {
   }
 
   toggleAutoHide() {
-    this.autoHideSidebar.set(!this.autoHideSidebar());
-    this.persistPreference();
+    this.preferenceService
+      .update({
+        theme: this.currentTheme(),
+        autoHideSidebar: !this.autoHideSidebar()
+      })
+      .subscribe();
+  }
+
+  toggleTheme() {
+    this.preferenceService
+      .update({
+        theme: this.currentTheme() === 'dark' ? 'light' : 'dark',
+        autoHideSidebar: this.autoHideSidebar()
+      })
+      .subscribe();
   }
 
   toggleNotificationPanel() {
     const next = !this.showNotificationPanel();
     this.showNotificationPanel.set(next);
+    this.showProfileMenu.set(false);
     if (next) {
       this.loadNotifications();
     }
+  }
+
+  toggleProfileMenu() {
+    this.showProfileMenu.set(!this.showProfileMenu());
+    this.showNotificationPanel.set(false);
   }
 
   markAsRead(id: number) {
@@ -237,30 +266,5 @@ export class AppShellComponent implements OnInit, OnDestroy {
       next: ({ count }) => this.unreadCount.set(count),
       error: () => this.unreadCount.set(0)
     });
-  }
-
-  private loadPreference() {
-    this.api.getMyPreference().subscribe({
-      next: (pref) => {
-        this.autoHideSidebar.set(pref.autoHideSidebar);
-        this.applyTheme();
-      },
-      error: () => {
-        this.applyTheme();
-      }
-    });
-  }
-
-  private persistPreference() {
-    this.api
-      .updateMyPreference({
-        theme: 'light',
-        autoHideSidebar: this.autoHideSidebar()
-      })
-      .subscribe();
-  }
-
-  private applyTheme() {
-    document.body.setAttribute('data-theme', 'light');
   }
 }

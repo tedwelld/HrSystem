@@ -11,6 +11,7 @@ import {
   AppNotification,
   CandidateDashboard,
   CvProfile,
+  InterviewSchedule,
   JobApplication,
   JobPosting,
   Snapshot,
@@ -105,6 +106,30 @@ export class HrApiService {
 
   getCvProfiles() {
     return this.http.get<CvProfile[]>(`${environment.apiBaseUrl}/cv/mine`);
+  }
+
+  getAdminInterviews() {
+    return this.http.get<InterviewSchedule[]>(`${environment.apiBaseUrl}/interviews/admin/mine`);
+  }
+
+  getCandidateInterviews() {
+    return this.http.get<InterviewSchedule[]>(`${environment.apiBaseUrl}/interviews/candidate/mine`);
+  }
+
+  scheduleInterview(payload: {
+    applicationId: number;
+    interviewType: string;
+    scheduledStartUtc: string;
+    scheduledEndUtc: string;
+    timeZone: string;
+    meetingLinkOrLocation: string;
+    notes: string;
+  }) {
+    return this.http.post<InterviewSchedule>(`${environment.apiBaseUrl}/interviews/admin/schedule`, payload);
+  }
+
+  updateInterviewStatus(payload: { interviewId: number; status: string; notes: string }) {
+    return this.http.post(`${environment.apiBaseUrl}/interviews/admin/update-status`, payload);
   }
 
   uploadStructuredCv(payload: {
