@@ -210,4 +210,5 @@ export interface CandidateDashboard {
   interviewScheduled: number;
   notificationsUnread: number;
   myApplicationsByStatus: ChartPoint[];
+  overallApplicationsByStatus: ChartPoint[];
 }

@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../core/services/auth.service';
+import { ModalService } from '../core/services/modal.service';
 import { PdfExportService } from '../core/services/pdf-export.service';
 import { HrApiService } from '../core/services/hr-api.service';
 import { UiPreferenceService } from '../core/services/ui-preference.service';
@@ -24,6 +25,7 @@ import {
 export class SettingsComponent implements OnInit {
   private readonly api = inject(HrApiService);
   private readonly auth = inject(AuthService);
+  private readonly modalService = inject(ModalService);
   private readonly pdfExport = inject(PdfExportService);
   private readonly preferenceService = inject(UiPreferenceService);
 
@@ -196,8 +198,16 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  deleteUser(user: AdminUser) {
-    if (!window.confirm(`Deactivate ${user.email}?`)) {
+  async deleteUser(user: AdminUser) {
+    const confirmed = await this.modalService.confirm({
+      title: 'Deactivate User',
+      message: `Deactivate ${user.email}? The account will lose access immediately.`,
+      confirmLabel: 'Deactivate',
+      cancelLabel: 'Keep Active',
+      tone: 'danger'
+    });
+
+    if (!confirmed) {
       return;
     }
 
@@ -255,8 +265,16 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  deleteCompany(company: AdminCompany) {
-    if (!window.confirm(`Delete company ${company.name}?`)) {
+  async deleteCompany(company: AdminCompany) {
+    const confirmed = await this.modalService.confirm({
+      title: 'Delete Company',
+      message: `Delete company ${company.name}? This only works when no jobs are attached to it.`,
+      confirmLabel: 'Delete Company',
+      cancelLabel: 'Cancel',
+      tone: 'danger'
+    });
+
+    if (!confirmed) {
       return;
     }
 

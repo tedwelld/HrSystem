@@ -29,4 +29,5 @@ public class CandidateDashboardDto
     public int InterviewScheduled { get; set; }
     public int NotificationsUnread { get; set; }
     public List<ChartPointDto> MyApplicationsByStatus { get; set; } = [];
+    public List<ChartPointDto> OverallApplicationsByStatus { get; set; } = [];
 }

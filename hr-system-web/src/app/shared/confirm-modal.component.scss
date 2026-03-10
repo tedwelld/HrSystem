@@ -1,0 +1,87 @@
+.modal-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top, rgba(37, 99, 235, 0.16), transparent 35%),
+    rgba(15, 23, 42, 0.62);
+  backdrop-filter: blur(6px);
+}
+
+.modal-card {
+  position: relative;
+  width: min(100%, 520px);
+  border-radius: 24px;
+  border: 1px solid var(--glass-line);
+  background: var(--glass-bg);
+  box-shadow: var(--shadow-soft);
+  padding: 1.2rem;
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+
+  h2 {
+    margin: 0.2rem 0 0;
+    font-size: 1.4rem;
+  }
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  color: var(--muted-color);
+}
+
+.ghost-close {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-line);
+  background: var(--surface-muted);
+  color: var(--text-color);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.modal-message {
+  margin: 1rem 0 0;
+  color: var(--muted-color);
+  line-height: 1.65;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-top: 1.2rem;
+}
+
+@media (max-width: 640px) {
+  .modal-card {
+    padding: 1rem;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+}

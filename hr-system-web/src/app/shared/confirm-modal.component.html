@@ -1,0 +1,29 @@
+<div
+  class="modal-shell"
+  *ngIf="modal() as dialog"
+  (document:keydown.escape)="close(false)">
+  <div class="modal-backdrop" (click)="close(false)"></div>
+
+  <section class="modal-card" role="dialog" aria-modal="true" [attr.aria-label]="dialog.title">
+    <div class="modal-head">
+      <div>
+        <p class="eyebrow">Confirmation</p>
+        <h2>{{ dialog.title }}</h2>
+      </div>
+      <button type="button" class="ghost-close" (click)="close(false)" aria-label="Close dialog">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <p class="modal-message">{{ dialog.message }}</p>
+
+    <div class="modal-actions">
+      <button type="button" class="btn" [ngClass]="confirmButtonClass()" (click)="close(true)">
+        {{ dialog.confirmLabel }}
+      </button>
+      <button type="button" class="btn btn-yellow" (click)="close(false)">
+        {{ dialog.cancelLabel }}
+      </button>
+    </div>
+  </section>
+</div>

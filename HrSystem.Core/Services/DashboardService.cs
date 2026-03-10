@@ -95,7 +95,13 @@ public class DashboardService(HrSystemDbContext dbContext, INotificationService 
             .Select(g => new { g.Key, Count = g.Count() })
             .ToListAsync();
 
+        var overallByStatusRaw = await _dbContext.JobApplications
+            .GroupBy(x => x.Stage)
+            .Select(g => new { g.Key, Count = g.Count() })
+            .ToListAsync();
+
         var unread = await _notificationService.GetUnreadCountAsync(userId);
+        var orderedStatuses = Enum.GetValues<ApplicationStage>().ToList();
 
         return new CandidateDashboardDto
         {
@@ -103,9 +109,19 @@ public class DashboardService(HrSystemDbContext dbContext, INotificationService 
             MyApplications = myApplications,
             InterviewScheduled = interviewScheduled,
             NotificationsUnread = unread,
-            MyApplicationsByStatus = byStatusRaw
-                .OrderBy(x => x.Key)
-                .Select(x => new ChartPointDto { Label = x.Key.ToString(), Value = x.Count })
+            MyApplicationsByStatus = orderedStatuses
+                .Select(stage => new ChartPointDto
+                {
+                    Label = stage.ToString(),
+                    Value = byStatusRaw.FirstOrDefault(x => x.Key == stage)?.Count ?? 0
+                })
+                .ToList(),
+            OverallApplicationsByStatus = orderedStatuses
+                .Select(stage => new ChartPointDto
+                {
+                    Label = stage.ToString(),
+                    Value = overallByStatusRaw.FirstOrDefault(x => x.Key == stage)?.Count ?? 0
+                })
                 .ToList()
         };
     }

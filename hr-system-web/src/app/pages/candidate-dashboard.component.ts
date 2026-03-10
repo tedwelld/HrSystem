@@ -24,7 +24,20 @@ export class CandidateDashboardComponent implements OnInit {
       {
         label: 'My Applications',
         data: [],
-        backgroundColor: '#2563eb'
+        backgroundColor: '#2563eb',
+        maxBarThickness: 26,
+        categoryPercentage: 0.58,
+        barPercentage: 0.72,
+        borderRadius: 10
+      },
+      {
+        label: 'Overall Pipeline',
+        data: [],
+        backgroundColor: 'rgba(22, 163, 74, 0.72)',
+        maxBarThickness: 26,
+        categoryPercentage: 0.58,
+        barPercentage: 0.72,
+        borderRadius: 10
       }
     ]
   };
@@ -32,8 +45,18 @@ export class CandidateDashboardComponent implements OnInit {
   chartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
+    scales: {
+      x: {
+        grid: {
+          display: false
+        }
+      },
+      y: {
+        beginAtZero: true
+      }
+    },
     plugins: {
-      legend: { display: false }
+      legend: { display: true }
     }
   };
 
@@ -50,7 +73,20 @@ export class CandidateDashboardComponent implements OnInit {
           {
             label: 'My Applications',
             data: data.myApplicationsByStatus.map((x) => x.value),
-            backgroundColor: '#2563eb'
+            backgroundColor: '#2563eb',
+            maxBarThickness: 26,
+            categoryPercentage: 0.58,
+            barPercentage: 0.72,
+            borderRadius: 10
+          },
+          {
+            label: 'Overall Pipeline',
+            data: data.overallApplicationsByStatus.map((x) => x.value),
+            backgroundColor: 'rgba(22, 163, 74, 0.72)',
+            maxBarThickness: 26,
+            categoryPercentage: 0.58,
+            barPercentage: 0.72,
+            borderRadius: 10
           }
         ]
       };
